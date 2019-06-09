@@ -1,36 +1,90 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import files from './modules/files';
+import feathersVuex from 'feathers-vuex';
+import feathersClient from './feathers-client';
+
+const { service, FeathersVuex } = feathersVuex(feathersClient, { idField: '_id' });
+
+Vue.use(Vuex);
+Vue.use(FeathersVuex);
 
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    foo: 'bar',
+
   },
   mutations: {
-    initialiseStore(state) {
-      // Check if the ID exists
-      if (localStorage.getItem('store')) {
-        // Replace the state object with the stored item
-        this.replaceState(
-          Object.assign(state, JSON.parse(localStorage.getItem('store'))),
-        );
-      }
-    },
+
   },
   actions: {
 
   },
   modules: {
-    files,
-  },
-});
 
-// Subscribe to store updates
-store.subscribe((mutation, state) => {
-  // Store the state object as a JSON string
-  localStorage.setItem('store', JSON.stringify(state));
+  },
+
+  plugins: [
+    service('projects', {
+      instanceDefaults: {
+        name: '',
+        ref: '',
+        description: '',
+        files: [],
+        boards: [],
+        libraries: [],
+      },
+    }),
+    service('files', {
+      instanceDefaults: {
+        name: '',
+        ref: '',
+        content: '',
+        localPath: null,
+      },
+    }),
+    service('servers', {
+      instanceDefaults: {
+        name: 'Local Test Server',
+        address: 'http://localhost:3000',
+        location: 'Under Your Nose',
+        owner: 'You',
+        website: 'http://example.com/self-promotion.html',
+        description: 'A compile server running on your local machine',
+      },
+    }),
+    service('cores', {
+      instanceDefaults: {
+        name: '',
+        version: '',
+        ref: '',
+        enabled: false,
+      },
+    }),
+    service('boards', {
+      instanceDefaults: {
+        name: '',
+        fqbn: '',
+        options: [],
+        selected: {},
+      },
+    }),
+    service('libraries', {
+      instanceDefaults: {
+        name: '',
+        releases: {},
+        version: 'latest',
+        types: [],
+        enabled: false,
+      },
+    }),
+    service('settings', {
+      instanceDefaults: {
+        key: '',
+        value: null,
+      },
+    }),
+  ],
 });
 
 export default store;
