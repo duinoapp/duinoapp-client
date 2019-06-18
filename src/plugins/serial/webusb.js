@@ -1,7 +1,7 @@
 import BaseSerial from './base-serial';
 
 const { usb } = navigator;
-
+console.log('using webusb');
 class WebUSBSerial extends BaseSerial {
   constructor() {
     super();

@@ -51,22 +51,21 @@ const store = new Vuex.Store({
         owner: 'You',
         website: 'http://example.com/self-promotion.html',
         description: 'A compile server running on your local machine',
-      },
-    }),
-    service('cores', {
-      instanceDefaults: {
-        name: '',
-        version: '',
-        ref: '',
-        enabled: false,
+        ping: -1,
       },
     }),
     service('boards', {
       instanceDefaults: {
         name: '',
         fqbn: '',
+        core: {
+          name: '',
+          version: '',
+          id: '',
+        },
         options: [],
         selected: {},
+        servers: [],
       },
     }),
     service('libraries', {
@@ -74,8 +73,8 @@ const store = new Vuex.Store({
         name: '',
         releases: {},
         version: 'latest',
-        types: [],
         enabled: false,
+        servers: [],
       },
     }),
     service('settings', {

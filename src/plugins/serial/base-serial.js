@@ -49,7 +49,9 @@ class BaseSerial extends EventEmitter {
 
   async disconnect() { this.connected = false; }
 
-  async setDeviceName(value, name) { if (await this.isDevice(value)) this.devices.push({ value, name }); }
+  async setDeviceName(value, name) {
+    if (await this.isDevice(value)) this.devices.push({ value, name });
+  }
 }
 
 export default BaseSerial;
