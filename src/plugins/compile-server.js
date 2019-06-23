@@ -77,7 +77,7 @@ class CompileServer extends EventEmitter {
     const cores = await this.socket.emitAsync('core.search', '');
     console.log('finding boards');
     const loadBoards = async (i) => {
-      if (i >= cores.length) return;
+      if (i >= cores.Platforms.length) return;
       const core = cores.Platforms[i];
       await this.loadBoards({
         name: core.Name,
@@ -96,17 +96,18 @@ class CompileServer extends EventEmitter {
     const libs = (await this.socket.emitAsync('lib.search', '')).libraries;
     const { Library } = this.Vue.$FeathersVuex;
     await Promise.all(libs.map(async (lib) => {
-      const library = new Library(
-        (await Library.find({ query: { name: lib.Name } }))[0] || { name: lib.Name },
-      );
+      const library = (await Library.find({ query: { name: lib.Name } }))[0]
+        || new Library({ name: lib.Name });
+      // eslint-disable-next-line no-param-reassign
+      lib.Releases.latest = lib.Releases[Object.keys(lib.Releases).pop()];
       library.releases = {};
       Object.keys(lib.Releases).forEach((i) => {
         library.releases[i] = {};
         Object.keys(lib.Releases[i]).forEach((j) => {
+          if (i !== 'latest' && !['Version'].includes(j)) return;
           library.releases[i][j.toLowerCase()] = lib.Releases[i][j];
         });
       });
-      library.releases.latest = library.releases[Object.keys(lib.Releases).pop()];
       if (!library.servers.includes(this.url)) library.servers = [...library.servers, this.url];
       await library.save();
     }));
@@ -115,7 +116,7 @@ class CompileServer extends EventEmitter {
         name: { $nin: libs.map(l => l.Name) },
         servers: this.url,
       },
-    })).data.forEach((l) => {
+    })).map((l) => {
       // eslint-disable-next-line no-param-reassign
       l.servers = l.servers.filter(s => s !== this.url);
       return l.save();
