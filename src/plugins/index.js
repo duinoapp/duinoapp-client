@@ -1,4 +1,3 @@
-import './vuetify';
 import Vue from 'vue';
 import './serial';
 import FlagIcon from 'vue-flag-icon';

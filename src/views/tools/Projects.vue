@@ -14,30 +14,30 @@
         </v-card-title>
         <v-list>
           <v-divider/>
-          <v-list-tile
+          <v-list-item
             v-for="proj in projects"
             :key="proj._id"
             @click="setCurrent(proj._id)"
             :class="currentProject && proj._id === currentProject._id ? 'primary--text' : ''"
           >
-            <v-list-tile-content>
-              <v-list-tile-title>{{proj.name}}</v-list-tile-title>
-              <v-list-tile-sub-title>{{proj.desc}}</v-list-tile-sub-title>
-            </v-list-tile-content>
-            <v-list-tile-action v-if="currentProject && currentProject._id === proj._id">
+            <v-list-item-content>
+              <v-list-item-title>{{proj.name}}</v-list-item-title>
+              <v-list-item-sub-title>{{proj.desc}}</v-list-item-sub-title>
+            </v-list-item-content>
+            <v-list-item-action v-if="currentProject && currentProject._id === proj._id">
               <v-chip color="primary" text-color="white">Current</v-chip>
-            </v-list-tile-action>
-            <v-list-tile-action v-if="projects.length > 1">
+            </v-list-item-action>
+            <v-list-item-action v-if="projects.length > 1">
               <v-menu offset-y>
                 <v-btn icon flat slot="activator"><v-icon>mdi-close</v-icon></v-btn>
                 <v-list>
-                  <v-list-tile @click="removeProject(proj._id)">
-                    <v-list-tile-title><v-icon left>mpi-trash</v-icon>Delete</v-list-tile-title>
-                  </v-list-tile>
+                  <v-list-item @click="removeProject(proj._id)">
+                    <v-list-item-title><v-icon left>mpi-trash</v-icon>Delete</v-list-item-title>
+                  </v-list-item>
                 </v-list>
               </v-menu>
-            </v-list-tile-action>
-          </v-list-tile>
+            </v-list-item-action>
+          </v-list-item>
         </v-list>
       </v-card>
     </v-flex>

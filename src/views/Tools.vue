@@ -2,12 +2,42 @@
   <div>
     <v-navigation-drawer app clipped permanent>
       <v-list dense class="pt-0">
-        <v-list-tile flat to="/tools/projects"><v-icon left>mdi-wrench</v-icon>Projects</v-list-tile>
-        <v-list-tile flat to="/tools/servers"><v-icon left>mdi-server</v-icon>Servers</v-list-tile>
-        <v-list-tile flat to="/tools/libraries"><v-icon left>mdi-book-open-variant</v-icon>Libraries</v-list-tile>
-        <v-list-tile flat to="/tools/boards"><v-icon left>mdi-chip</v-icon>Boards</v-list-tile>
-        <v-list-tile flat to="/tools/settings"><v-icon left>mdi-settings</v-icon>Settings</v-list-tile>
-        <v-list-tile flat to="/tools/about"><v-icon left>mdi-information</v-icon>About</v-list-tile>
+        <v-list-item flat to="/tools/projects">
+          <v-list-item-icon><v-icon left>mdi-wrench</v-icon></v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Projects</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item flat to="/tools/servers">
+          <v-list-item-icon><v-icon left>mdi-server</v-icon></v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Servers</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item flat to="/tools/libraries">
+          <v-list-item-icon><v-icon left>mdi-book-open-variant</v-icon></v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Libraries</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item flat to="/tools/boards">
+          <v-list-item-icon><v-icon left>mdi-chip</v-icon></v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Boards</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item flat to="/tools/settings">
+          <v-list-item-icon><v-icon left>mdi-settings</v-icon></v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Settings</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item flat to="/tools/about">
+          <v-list-item-icon><v-icon left>mdi-information</v-icon></v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>About</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 

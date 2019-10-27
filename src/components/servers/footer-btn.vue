@@ -1,26 +1,21 @@
 <template>
-  <v-dialog v-model="dialog" max-width="500">
-    <v-btn flat dense small slot="activator">Server: <flag :iso="currentServer.location" /> <ping-bubble :ping="currentServer.ping" /></v-btn>
-    <v-card>
-      <v-card-title class="headline">
-        Servers
-        <v-spacer/>
-        <v-btn>Custom Server</v-btn>
-      </v-card-title>
-      <server-picker/>
-    </v-card>
-  </v-dialog>
+  <div>
+    <v-btn text dense small v-if="currentServer" to="/tools/servers">
+      Server:
+      &nbsp;<ping-bubble :ping="currentServer.ping" />
+      &nbsp;<flag :iso="currentServer.country" />
+    </v-btn>
+    <v-btn text dense small v-else to="/tools/servers">Select Server</v-btn>
+  </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 import pingBubble from './ping-bubble.vue';
-import serverPicker from './picker.vue';
 
 export default {
   components: {
     pingBubble,
-    serverPicker,
   },
   data() {
     return {
@@ -30,5 +25,5 @@ export default {
   computed: {
     ...mapGetters('servers', { currentServer: 'current' }),
   },
-}
+};
 </script>

@@ -45,38 +45,20 @@ const store = new Vuex.Store({
     }),
     service('servers', {
       instanceDefaults: {
-        name: 'Local Test Server',
-        address: 'http://localhost:3000',
-        location: 'Under Your Nose',
-        owner: 'You',
-        website: 'http://example.com/self-promotion.html',
-        description: 'A compile server running on your local machine',
+        name: '',
+        address: '',
+        location: '',
+        country: 'AU',
+        owner: '',
+        website: '',
+        description: '',
         ping: -1,
+        isCustom: true,
       },
     }),
-    service('boards', {
-      instanceDefaults: {
-        name: '',
-        fqbn: '',
-        core: {
-          name: '',
-          version: '',
-          id: '',
-        },
-        options: [],
-        selected: {},
-        servers: [],
-      },
-    }),
-    service('libraries', {
-      instanceDefaults: {
-        name: '',
-        releases: {},
-        version: 'latest',
-        enabled: false,
-        servers: [],
-      },
-    }),
+    service('boards'),
+    service('cores'),
+    service('libraries'),
     service('settings', {
       instanceDefaults: {
         key: '',
