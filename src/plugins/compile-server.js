@@ -3,6 +3,11 @@ import io from 'socket.io-client';
 import store from '../store';
 import serial from './serial';
 
+const chunk = (arr, size) => Array.from(
+  { length: Math.ceil(arr.length / size) },
+  (v, i) => arr.slice(i * size, i * size + size),
+);
+
 class CompileServer extends EventEmitter {
   constructor() {
     super();
@@ -62,6 +67,7 @@ class CompileServer extends EventEmitter {
         if (pings.length < sampleSize) return socket.emit('p', pingCB);
         if (pings.length > sampleSize) return Math.random();
         socket.disconnect();
+        console.log(pings);
         return resolve({ ...serverData, ping: pings.reduce((a, p) => a + p, 0) / pings.length });
       };
       socket.emit('p', pingCB);
@@ -97,14 +103,15 @@ class CompileServer extends EventEmitter {
       (await Library.find()).map(lib => !libraries.some(l => l.id === lib.id) && lib.remove()),
     );
 
+    console.log('saving cores');
     await Promise.all(cores.map(
       core => (Core.findInStore({ query: { id: core.id } }).data[0] || (new Core(core))).save(),
     ));
-    await Promise.all(libraries.map(
-      lib => (Library.findInStore({ query: { id: lib.id } }).data[0] || (new Library(lib))).save(),
-    ));
+    console.log('saving boards');
     await Promise.all(boards.map(async (board) => {
       const existing = Board.findInStore({ query: { id: board.id } }).data[0];
+      // eslint-disable-next-line no-param-reassign
+      if (existing) board._id = existing._id;
       if (existing && board.config_options) {
         board.config_options.forEach((option) => {
           const exOption = existing.config_options.find(opt => opt.option === option.option);
@@ -118,7 +125,17 @@ class CompileServer extends EventEmitter {
       }
       return (new Board(board)).save();
     }));
-    console.log('finished loading server details');
+    console.log('saving libs');
+    const start = Date.now();
+    await chunk(libraries, 20).reduce((a, libs) => new Promise(async (resolve) => {
+      await a;
+      setTimeout(resolve, 10);
+      await Promise.all(libs.map(lib => (
+        Library.findInStore({ query: { id: lib.id } }).data[0]
+        || (new Library(lib))
+      ).save()));
+    }));
+    console.log('finished loading server details', Date.now() - start);
   }
 
   connect(silent = false) {
