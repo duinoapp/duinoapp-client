@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 import io from 'socket.io-client';
+import stats from 'stats-lite';
 import store from '../store';
 import serial from './serial';
 
@@ -68,7 +69,8 @@ class CompileServer extends EventEmitter {
         if (pings.length > sampleSize) return Math.random();
         socket.disconnect();
         console.log(pings);
-        return resolve({ ...serverData, ping: pings.reduce((a, p) => a + p, 0) / pings.length });
+        if (stats.stdev(pings) > 200) return this.pingServer(url, timeout).then(resolve);
+        return resolve({ ...serverData, ping: stats.mean(pings) });
       };
       socket.emit('p', pingCB);
       setTimeout(() => {
