@@ -21,21 +21,23 @@
     <router-view/>
 
     <v-footer dense app>
-      <v-spacer/>
       <div>&copy; {{ new Date().getFullYear() }}</div>
       <v-spacer/>
+      <board-footer />
       <server-footer />
     </v-footer>
   </v-app>
 </template>
 
 <script>
+import BoardFooter from './components/boards/footer-btn.vue';
 import ServerFooter from './components/servers/footer-btn.vue';
 
 export default {
   name: 'App',
   components: {
     ServerFooter,
+    BoardFooter,
   },
   data() {
     return {
