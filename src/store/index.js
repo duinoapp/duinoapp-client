@@ -30,18 +30,16 @@ const store = new Vuex.Store({
       instanceDefaults: {
         name: '',
         ref: '',
-        description: '',
-        files: [],
-        boards: [],
-        libraries: [],
+        desc: '',
       },
     }),
     service('files', {
       instanceDefaults: {
         name: '',
         ref: '',
-        content: '',
+        body: '',
         localPath: null,
+        project: '',
       },
     }),
     service('servers', {
