@@ -15,8 +15,11 @@ class CompileServer extends EventEmitter {
     this.url = 'http://localhost:3030';
     this.socket = null;
     store.subscribe((mutation) => {
-      if (mutation.type !== 'servers/setCurrent') return;
-      this.setServer(store.getters['servers/current']);
+      if (mutation.type === 'servers/setCurrent') {
+        this.setServer(store.getters['servers/current']);
+      } else if (mutation.type === 'boards/setCurrent') {
+        window.localStorage.existingBoardId = store.getters['boards/current'].id;
+      }
     });
   }
 
@@ -129,6 +132,11 @@ class CompileServer extends EventEmitter {
       }
       return (new Board(board)).save();
     }));
+    const { existingBoardId } = window.localStorage;
+    const existingBoard = Board.findInStore({ query: { id: existingBoardId } }).data[0];
+    if (existingBoard && !store.getters['boards/current']) {
+      store.commit('boards/setCurrent', existingBoard);
+    }
     console.log('saving libs');
     const start = Date.now();
     await chunk(libraries, 20).reduce((a, libs) => new Promise(async (resolve) => {
