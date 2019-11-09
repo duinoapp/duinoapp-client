@@ -1,10 +1,15 @@
 <template>
   <div>
-    <v-btn text dense small v-if="currentServer" to="/tools/servers">
-      Server:
-      &nbsp;<ping-bubble :ping="currentServer.ping" />
-      &nbsp;<flag :iso="currentServer.country" />
-    </v-btn>
+    <v-tooltip top v-if="currentServer">
+      <template v-slot:activator="{ on }">
+        <v-btn text dense small to="/tools/servers" v-on="on">
+          Server:
+          &nbsp;<ping-bubble :ping="currentServer.ping" />
+          &nbsp;<flag :iso="currentServer.country" />
+        </v-btn>
+      </template>
+      <span>{{currentServer.name}}</span>
+    </v-tooltip>
     <v-btn text dense small v-else to="/tools/servers">Select Server</v-btn>
   </div>
 </template>
