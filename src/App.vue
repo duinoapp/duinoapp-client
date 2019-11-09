@@ -26,18 +26,21 @@
       <board-footer />
       <server-footer />
     </v-footer>
+    <serial-prompts />
   </v-app>
 </template>
 
 <script>
 import BoardFooter from './components/boards/footer-btn.vue';
 import ServerFooter from './components/servers/footer-btn.vue';
+import SerialPrompts from './components/serial/prompts.vue';
 
 export default {
   name: 'App',
   components: {
     ServerFooter,
     BoardFooter,
+    SerialPrompts,
   },
   data() {
     return {

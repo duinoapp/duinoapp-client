@@ -22,6 +22,8 @@ class CompileServer extends EventEmitter {
 
   install(Vue) {
     // eslint-disable-next-line no-param-reassign
+    Vue.$compiler = this;
+    // eslint-disable-next-line no-param-reassign
     Vue.prototype.$compiler = this;
     this.Vue = Vue;
     this.fetchServers();

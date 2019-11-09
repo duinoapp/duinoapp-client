@@ -26,6 +26,8 @@ class BaseSerial extends EventEmitter {
 
   install(Vue) {
     // eslint-disable-next-line no-param-reassign
+    Vue.$serial = this;
+    // eslint-disable-next-line no-param-reassign
     Vue.prototype.$serial = this;
   }
 
