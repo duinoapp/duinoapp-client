@@ -42,10 +42,10 @@
                   <v-btn icon text v-on="on"><v-icon>mdi-close</v-icon></v-btn>
                 </template>
                 <v-list>
-                  <v-list-item @click="proj.remove()">
+                  <v-list-item @click="removeProject(proj)">
                     <v-list-item-title class="error--text">
                       <v-icon left color="error">mdi-trash-can-outline</v-icon>
-                      Delete Project
+                      Delete Project and Files
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -76,7 +76,7 @@
             <v-text-field
               label="Project Name"
               v-model="name"
-              :hint="snakeCase(name)"
+              :hint="ref"
             />
             <v-textarea
               label="Project Description (optional)"
@@ -99,6 +99,7 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex';
 import snakeCase from 'lodash/snakeCase';
+import defaultCode from '@/assets/default-code.txt';
 
 export default {
   data() {
@@ -113,9 +114,25 @@ export default {
   computed: {
     ...mapGetters('projects', { projectFind: 'find', currentProject: 'current' }),
     projects() { return this.projectFind({ query: { $limit: 9999 } }).data; },
+    ref() {
+      if (!this.name.trim()) return '';
+      let ref = snakeCase(this.name);
+      let count = 1;
+      while (this.projectFind({ query: { ref, _id: { $ne: this.id } } }).total) {
+        count += 1;
+        ref = `${snakeCase(this.name)}_${count}`;
+      }
+      return ref;
+    },
   },
   methods: {
     ...mapMutations('projects', { setCurrentProject: 'setCurrent' }),
+    async removeProject(project) {
+      const { File } = this.$FeathersVuex;
+      const files = await File.find({ query: { projectId: project.id } });
+      await Promise.all(files.map(file => file.remove()));
+      project.remove();
+    },
     editProject(pro) {
       this.name = pro.name;
       this.desc = pro.desc;
@@ -129,24 +146,47 @@ export default {
       this.dialog = false;
     },
     async newProject() {
-      if (!this.name) return;
-      const { Project } = this.$FeathersVuex;
-      let ref = snakeCase(this.name);
-      let count = 1;
-      while (this.projectFind({ query: { ref } }).total) {
-        count += 1;
-        ref = `${snakeCase(this.name)}_${count}`;
-      }
+      if (!this.name.trim()) return;
+      const { Project, File } = this.$FeathersVuex;
       const project = new Project({
         name: this.name,
         desc: this.desc,
-        ref,
+        ref: this.ref,
         ...(this.id !== null ? { _id: this.id } : {}),
       });
       await project.save();
-      if (this.id === null) this.setCurrentProject(project);
+      if (this.id === null) {
+        this.setCurrentProject(project);
+        const file = new File({
+          name: `${project.ref}.ino`,
+          ref: `${project.ref}/${project.ref}.ino`,
+          body: defaultCode,
+          contentType: 'text/x-arduino',
+          main: true,
+          projectId: project.id,
+        });
+        await file.save();
+      } else {
+        const files = await File.find({ query: { projectId: project.id } });
+        await Promise.all(files.map(async (file) => {
+          if (file.main) {
+            // eslint-disable-next-line no-param-reassign
+            file.name = `${project.ref}.ino`;
+            // eslint-disable-next-line no-param-reassign
+            file.ref = `${project.ref}/${project.ref}.ino`;
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            file.ref = `${project.ref}/${file.ref.replace(/^[^/]*\//, '')}`;
+          }
+          file.save();
+        }));
+      }
       this.reset();
     },
+  },
+  mounted() {
+    const { Project } = this.$FeathersVuex;
+    Project.find({ query: { $limit: 9999 } });
   },
 };
 </script>

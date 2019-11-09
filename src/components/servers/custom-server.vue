@@ -53,10 +53,15 @@ export default {
     ...mapMutations('servers', ['setCurrent']),
     async checkUrl() {
       if (!this.url) return;
+      const { Server } = this.$FeathersVuex;
       this.serverData = null;
       this.err = '';
+      if ((await Server.find({ query: { address: this.url.trim() } })).length) {
+        this.err = 'Server already exists.';
+        return;
+      }
       try {
-        this.serverData = await this.$compiler.pingServer(this.url, 500);
+        this.serverData = await this.$compiler.pingServer(this.url.trim(), 500);
       } catch (err) {
         console.error(err);
         this.err = 'Invalid server address.';

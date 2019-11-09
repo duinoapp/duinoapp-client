@@ -37,19 +37,21 @@
                 {{board.name}}
               </v-list-item-title>
               <v-list-item-subtitle>
-                {{(cores.find(core => board.id.includes(`${core.id}:`)) || { name: '' }).name}}
+                {{
+                  (cores.find(core => board.fqbn.includes(`${core.coreId}:`)) || { name: '' }).name
+                }}
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         <v-list-group
           v-for="core in this.search.trim() ? [] : cores"
           :key="core.id"
-          :value="currentBoard && currentBoard.id.includes(`${core.id}:`)"
+          :value="currentBoard && currentBoard.fqbn.includes(`${core.coreId}:`)"
         >
           <template v-slot:activator>
             <v-list-item-title
               :class="
-                currentBoard && currentBoard.id.includes(`${core.id}:`)
+                currentBoard && currentBoard.fqbn.includes(`${core.coreId}:`)
                 ? 'primary--text'
                 : undefined
               "
@@ -59,7 +61,7 @@
           </template>
 
           <v-list-item
-            v-for="board in findBoards({ query: { id: new RegExp(`^${core.id}:`) } }).data"
+            v-for="board in findBoards({ query: { fqbn: new RegExp(`^${core.coreId}:`) } }).data"
             :key="board.id"
             @click="setCurrent(board)"
             :input-value="currentBoard && currentBoard.id === board.id"
@@ -118,8 +120,8 @@ export default {
     cores() {
       const cores = this.findCores({ query: { $sort: { name: 1 } } }).data;
       return [
-        ...cores.filter(core => this.featured.includes(core.id)),
-        ...cores.filter(core => !this.featured.includes(core.id)),
+        ...cores.filter(core => this.featured.includes(core.coreId)),
+        ...cores.filter(core => !this.featured.includes(core.coreId)),
       ];
     },
     searchBoards() {

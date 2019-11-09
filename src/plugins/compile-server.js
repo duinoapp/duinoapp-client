@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import io from 'socket.io-client';
 import stats from 'stats-lite';
+import omit from 'lodash/omit';
 import store from '../store';
 import serial from './serial';
 
@@ -17,8 +18,6 @@ class CompileServer extends EventEmitter {
     store.subscribe((mutation) => {
       if (mutation.type === 'servers/setCurrent') {
         this.setServer(store.getters['servers/current']);
-      } else if (mutation.type === 'boards/setCurrent') {
-        window.localStorage.existingBoardId = store.getters['boards/current'].id;
       }
     });
   }
@@ -37,11 +36,11 @@ class CompileServer extends EventEmitter {
     const res = await fetch('/servers.json');
     const servers = await res.json();
     await Promise.all(servers.map(async (serv) => {
-      if ((await Server.find({ query: { address: serv } })).length) return;
       const server = new Server({ address: serv, isCustom: false });
+      if ((await Server.find({ query: { id: server.id } })).length) return;
       await server.save();
     }));
-    const storedServers = await Promise.all((await Server.find()).map(async (server) => {
+    await Promise.all((await Server.find()).map(async (server) => {
       const serverData = await this.pingServer(server.address);
       Object.keys(serverData).forEach((i) => {
         // eslint-disable-next-line no-param-reassign
@@ -50,12 +49,13 @@ class CompileServer extends EventEmitter {
       console.log(server);
       return server.patch();
     }));
-    const { existingAddress } = window.localStorage;
-    const existingServer = storedServers
-      .find(serv => existingAddress && serv.address === existingAddress);
-    if (existingServer && !store.getters['servers/current']) {
-      store.commit('servers/setCurrent', existingServer);
-    }
+    this.Vue.$currentStore.load('servers');
+    // const { existingAddress } = window.localStorage;
+    // const existingServer = storedServers
+    //   .find(serv => existingAddress && serv.address === existingAddress);
+    // if (existingServer && !store.getters['servers/current']) {
+    //   store.commit('servers/setCurrent', existingServer);
+    // }
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -88,7 +88,7 @@ class CompileServer extends EventEmitter {
 
   setServer(serverConfig) {
     this.url = serverConfig.address;
-    window.localStorage.existingAddress = this.url;
+    // window.localStorage.existingAddress = this.url;
     console.log(`loading server: ${this.url}`);
     this.load();
   }
@@ -96,9 +96,9 @@ class CompileServer extends EventEmitter {
   async load() {
     const { Core, Board, Library } = this.Vue.$FeathersVuex;
     await this.connect();
-    const cores = await this.socket.emitAsync('info.cores');
-    const boards = (await this.socket.emitAsync('info.boards')).map(board => ({ ...board, id: board.fqbn }));
-    const libraries = (await this.socket.emitAsync('info.libraries')).map(lib => ({ ...lib, id: lib.name }));
+    const cores = (await this.socket.emitAsync('info.cores')).map(core => new Core({ ...omit(core, ['id']), coreId: core.id }));
+    const boards = (await this.socket.emitAsync('info.boards')).map(board => new Board(board));
+    const libraries = (await this.socket.emitAsync('info.libraries')).map(lib => new Library(lib));
     this.disconnect();
     await Promise.all(
       (await Core.find()).map(core => !cores.some(c => c.id === core.id) && core.remove()),
@@ -112,7 +112,7 @@ class CompileServer extends EventEmitter {
 
     console.log('saving cores');
     await Promise.all(cores.map(
-      core => (Core.findInStore({ query: { id: core.id } }).data[0] || (new Core(core))).save(),
+      core => (Core.findInStore({ query: { id: core.id } }).data[0] || core).save(),
     ));
     console.log('saving boards');
     await Promise.all(boards.map(async (board) => {
@@ -130,13 +130,9 @@ class CompileServer extends EventEmitter {
           }));
         });
       }
-      return (new Board(board)).save();
+      return board.save();
     }));
-    const { existingBoardId } = window.localStorage;
-    const existingBoard = Board.findInStore({ query: { id: existingBoardId } }).data[0];
-    if (existingBoard && !store.getters['boards/current']) {
-      store.commit('boards/setCurrent', existingBoard);
-    }
+    this.Vue.$currentStore.load('boards');
     console.log('saving libs');
     const start = Date.now();
     await chunk(libraries, 20).reduce((a, libs) => new Promise(async (resolve) => {
@@ -144,7 +140,7 @@ class CompileServer extends EventEmitter {
       setTimeout(resolve, 10);
       await Promise.all(libs.map(lib => (
         Library.findInStore({ query: { id: lib.id } }).data[0]
-        || (new Library(lib))
+        || lib
       ).save()));
     }));
     console.log('finished loading server details', Date.now() - start);

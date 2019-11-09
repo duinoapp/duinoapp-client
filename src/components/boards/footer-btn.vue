@@ -1,8 +1,13 @@
 <template>
   <div>
-    <v-btn text dense small v-if="currentBoard" to="/tools/boards">
-      Board: {{currentBoard.name}}
-    </v-btn>
+    <v-tooltip top v-if="currentBoard">
+      <template v-slot:activator="{ on }">
+        <v-btn text dense small v-on="on" to="/tools/boards">
+          Board: {{currentBoard.fqbn.split(':').shift()}} {{currentBoard.fqbn.split(':').pop()}}
+        </v-btn>
+      </template>
+      <span>{{currentBoard.name}}</span>
+    </v-tooltip>
     <v-btn text dense small v-else to="/tools/boards">Select Board</v-btn>
   </div>
 </template>
