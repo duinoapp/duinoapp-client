@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import feathersVuex from 'feathers-vuex';
 import uuid3 from 'uuid/v3';
 import merge from 'lodash/merge';
+import moment from 'dayjs';
 import feathersClient from './feathers-client';
 
 const { service, FeathersVuex } = feathersVuex(feathersClient, { idField: '_id' });
@@ -23,6 +24,22 @@ const namespaces = {
 };
 
 const genId = (value, serv) => uuid3(value, namespaces[serv]);
+const meta = () => ({
+  get createdAt() {
+    return () => moment(this.meta.createdAt);
+  },
+  get updatedAt() {
+    return () => moment(this.meta.createdAt);
+  },
+  get currentAt() {
+    return () => moment(this.meta.createdAt);
+  },
+  meta: {
+    createdAt: moment().toJSON(),
+    updatedAt: moment().toJSON(),
+    currentAt: moment().toJSON(),
+  },
+});
 
 const store = new Vuex.Store({
   state: {
@@ -46,6 +63,7 @@ const store = new Vuex.Store({
           name: '',
           desc: '',
           localPath: null,
+          ...meta(),
         };
       },
     }),
@@ -60,6 +78,7 @@ const store = new Vuex.Store({
           localPath: null,
           projectId: '',
           main: false,
+          ...meta(),
         };
       },
     }),
@@ -76,6 +95,7 @@ const store = new Vuex.Store({
           description: '',
           ping: -1,
           isCustom: true,
+          ...meta(),
         };
       },
     }),
@@ -99,6 +119,7 @@ const store = new Vuex.Store({
               ((this.properties.menu[i] || {})[this.config[i]] || {}),
             ), this.properties);
           },
+          ...meta(),
         };
       },
     }),
@@ -106,6 +127,7 @@ const store = new Vuex.Store({
       instanceDefaults(data) {
         return {
           id: genId(data.coreId, 'cores'),
+          ...meta(),
         };
       },
     }),
@@ -113,6 +135,7 @@ const store = new Vuex.Store({
       instanceDefaults(data) {
         return {
           id: genId(data.name, 'libraries'),
+          ...meta(),
         };
       },
     }),
@@ -122,6 +145,7 @@ const store = new Vuex.Store({
           id: genId(data.key, 'settings'),
           key: '',
           value: null,
+          ...meta(),
         };
       },
     }),

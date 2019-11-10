@@ -11,6 +11,7 @@
     "@feathersjs/feathers": "^3.3.1",
     "@mdi/font": "^4.5.95",
     "core-js": "^2.6.10",
+    "dayjs": "^1.8.17",
     "feathers-localstorage": "^4.0.0",
     "feathers-vuex": "^1.7.2",
     "lodash": "^4.17.15",
