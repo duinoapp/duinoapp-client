@@ -1,0 +1,57 @@
+<template>
+  <v-menu top v-model="menu" offset-y>
+    <template v-slot:activator="{ on }">
+      <v-btn text dense small v-on="on" v-if="currentDevice">
+        Serial: {{deviceName}}
+      </v-btn>
+      <v-btn text dense small v-on="on" v-else>Select Device Port</v-btn>
+    </template>
+    <v-list dense :style="{ padding: '0' }">
+      <v-list-item
+        v-for="device in devices"
+        :key="device.value"
+        @click="$serial.setCurrentDevice(device.value)"
+      >
+        <v-list-item-title>{{device.name}}</v-list-item-title>
+      </v-list-item>
+      <v-divider v-if="devices.length" />
+      <v-list-item
+        v-if="$serial.requestRequired"
+        @click="$serial.requestDevice()"
+      >
+        <v-list-item-title>
+          <v-icon left>mdi-plus</v-icon>
+          Add New Device
+        </v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-menu>
+</template>
+
+<script>
+
+export default {
+  data() {
+    return {
+      menu: false,
+      devices: [],
+      currentDevice: (this.$serial && this.$serial.currentDevice) || null,
+    };
+  },
+  computed: {
+    deviceName() {
+      if (!this.currentDevice) return '';
+      return (this.devices.find(d => d.value === this.currentDevice) || { name: 'Unknown' }).name;
+    },
+  },
+  watch: {
+    async menu(v) {
+      if (v) this.devices = await this.$serial.listDevices();
+    },
+  },
+  mounted() {
+    this.currentDevice = this.$serial.currentDevice || null;
+    this.$serial.on('currentDevice', (value) => { this.currentDevice = value; });
+  },
+};
+</script>

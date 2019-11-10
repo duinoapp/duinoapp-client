@@ -33,7 +33,10 @@ class BaseSerial extends EventEmitter {
 
   async requestDevice() { return {}; }
 
-  async listDevices() { return this.devices; }
+  async listDevices() {
+    const isDevices = await Promise.all(this.devices.map(device => this.isDevice(device.value)));
+    return this.devices.filter((device, i) => isDevices[i]);
+  }
 
   async isDevice(value) { return true; }
 
@@ -53,6 +56,10 @@ class BaseSerial extends EventEmitter {
 
   async setDeviceName(value, name) {
     if (await this.isDevice(value)) this.devices.push({ value, name });
+  }
+
+  async getDeviceName(value) {
+    return (this.devices.find(d => d.value === value) || { name: '' }).name;
   }
 }
 

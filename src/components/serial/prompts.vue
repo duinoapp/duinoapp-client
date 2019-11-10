@@ -55,6 +55,32 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="accessDeniedDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-card-title class="headline">
+          Oh No! We cannot access the device!
+        </v-card-title>
+        <v-card-text>
+          <p>
+            For one reason or another, your operating system is blocking access
+            to the device. The reason for this can vary depending on your operating
+            system, below is a list of known fixes:
+          </p>
+          <ul>
+            <li><a href="https://playground.arduino.cc/Linux/All/#Permission" target="_blank">
+              Linux Serial Permissions
+            </a></li>
+          </ul>
+          <br>
+          <p>
+            If none of those apply/worked for you, please get in touch on our GitHub.
+          </p>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -64,6 +90,7 @@ export default {
     return {
       nameDialog: false,
       noSerialDialog: false,
+      accessDeniedDialog: false,
       name: '',
       value: null,
     };
@@ -87,6 +114,9 @@ export default {
       this.$serial.on('deviceNamePrompt', (value) => {
         this.value = value;
         this.nameDialog = true;
+      });
+      this.$serial.on('errorPrompt', (reason) => {
+        if (reason === 'access_denied') this.accessDeniedDialog = true;
       });
       if (this.$serial.implementation === 'basic') {
         this.noSerialDialog = true;

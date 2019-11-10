@@ -23,6 +23,7 @@
     <v-footer dense app>
       <div>&copy; {{ new Date().getFullYear() }}</div>
       <v-spacer/>
+      <serial-footer v-if="serialReady" />
       <board-footer />
       <server-footer />
     </v-footer>
@@ -33,6 +34,7 @@
 <script>
 import BoardFooter from './components/boards/footer-btn.vue';
 import ServerFooter from './components/servers/footer-btn.vue';
+import SerialFooter from './components/serial/footer-btn.vue';
 import SerialPrompts from './components/serial/prompts.vue';
 
 export default {
@@ -41,16 +43,24 @@ export default {
     ServerFooter,
     BoardFooter,
     SerialPrompts,
+    SerialFooter,
   },
   data() {
     return {
-      //
+      serialReady: false,
     };
+  },
+  methods: {
+    checkSerialReady() {
+      if (this.$serial) this.serialReady = true;
+      else setTimeout(() => this.checkSerialReady(), 100);
+    },
   },
   mounted() {
     this.$currentStore.load('boards');
     this.$currentStore.load('projects');
     this.$currentStore.load('files');
+    this.checkSerialReady();
   },
 };
 </script>

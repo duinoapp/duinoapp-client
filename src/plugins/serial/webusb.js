@@ -6,7 +6,7 @@ class WebUSBSerial extends BaseSerial {
   constructor() {
     super();
     this.requestRequired = true;
-    this.devices = JSON.parse(localStorage.deviceNames || '{}');
+    this.devices = JSON.parse(localStorage.deviceNames || '[]');
     this._currentDevice = null;
     this._rl = false;
     this.implementation = 'webusb';
@@ -15,7 +15,7 @@ class WebUSBSerial extends BaseSerial {
   // eslint-disable-next-line class-methods-use-this
   async _getDevice(value) {
     const devices = await usb.getDevices();
-    return devices.find(d => d.serialNumber === value);
+    return devices.find(d => d.serialNumber === value) || null;
   }
 
   async _readLoop() {
@@ -31,19 +31,32 @@ class WebUSBSerial extends BaseSerial {
 
   async requestDevice() {
     const device = await usb.requestDevice({ filters: [{ classCode: 2 }] });
-    this.emit('deviceNamePrompt', device.serialNumber);
+    if (await this.getDeviceName(device.serialNumber)) {
+      console.log(this.getDeviceName(device.serialNumber));
+      this.setCurrentDevice(device.serialNumber);
+    } else {
+      this.emit('deviceNamePrompt', device.serialNumber);
+    }
   }
 
   async isDevice(value) {
-    return !!this._getDevice(value);
+    return !!(await this._getDevice(value));
   }
 
   async setCurrentDevice(value) {
     if (!(await this.isDevice(value))) return;
     if (this._currentDevice) this.disconnect();
-    this._currentDevice = this._getDevice(value);
+    this._currentDevice = await this._getDevice(value);
     this.currentDevice = value;
-    this.connect();
+    this.emit('currentDevice', value);
+    try {
+      await this.connect();
+    } catch (err) {
+      if (err.message === 'Access denied.') {
+        this.emit('errorPrompt', 'access_denied');
+      }
+      console.error([err]);
+    }
   }
 
   async writeBuff(buff) {
@@ -57,9 +70,15 @@ class WebUSBSerial extends BaseSerial {
 
   async connect() {
     if (!this._currentDevice || this._currentDevice.opened) return;
-    await this._currentDevice.open();
+    const device = await this._getDevice(this.currentDevice);
+    console.log(1, this._currentDevice, device);
+    await device.open();
+    console.log(2);
     await this._currentDevice.setConfiguration(1);
-    await this._currentDevice.claimInterface(2);
+    console.log(3);
+    const { interfaceNumber } = this._currentDevice.configuration.interfaces[0];
+    await this._currentDevice.claimInterface(interfaceNumber);
+    console.log(4);
     await this._currentDevice.controlTransferOut({
       requestType: 'class',
       recipient: 'interface',
@@ -67,7 +86,9 @@ class WebUSBSerial extends BaseSerial {
       value: 0x01,
       index: 0x02,
     });
+    console.log(5);
     this.emit('connected', this.currentDevice);
+    console.log(6);
     if (!this._rl) this._readLoop();
   }
 
@@ -82,6 +103,7 @@ class WebUSBSerial extends BaseSerial {
     if (!(await this.isDevice(value))) return;
     this.devices.push({ value, name });
     localStorage.deviceNames = JSON.stringify(this.devices);
+    this.setCurrentDevice(value);
   }
 }
 
