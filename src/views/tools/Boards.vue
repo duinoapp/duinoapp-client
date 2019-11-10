@@ -20,7 +20,16 @@
         <v-divider />
         <v-list-item v-if="this.search.trim() && !searchBoards.length">
           <v-list-item-content>
-            <v-list-item-subtitle>No Boards found that match that search</v-list-item-subtitle>
+            <v-list-item-subtitle>No boards found that match that search</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item v-if="!cores.length">
+          <v-list-item-content>
+            <v-list-item-subtitle>
+              No board data loaded, try
+              <router-link to="/tools/servers">selecting a server</router-link>
+              to load it in.
+            </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
         <v-list-item

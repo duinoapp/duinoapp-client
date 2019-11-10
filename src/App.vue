@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <div>
-      <v-app-bar app dense clipped-left>
+      <v-app-bar app dense clipped-left elevation="2">
         <v-btn text to="/" active-class="foobar">
           <v-img
             :src="require('./assets/logo.svg')"

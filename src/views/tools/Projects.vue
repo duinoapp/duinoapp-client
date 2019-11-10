@@ -19,7 +19,7 @@
             <span>Create New Project</span>
           </v-tooltip>
         </v-card-title>
-        <v-list>
+        <v-list v-if="projects.length">
           <v-divider/>
           <v-list-item
             v-for="proj in projects"
@@ -27,7 +27,7 @@
             @click="Math.random"
             :class="currentProject && proj._id === currentProject._id ? 'primary--text' : ''"
           >
-            <v-list-item-content @click="setCurrentProject(proj._id)">
+            <v-list-item-content @click="setCurrentProject(proj)">
               <v-list-item-title>{{proj.name}}</v-list-item-title>
               <v-list-item-subtitle>{{proj.desc}}</v-list-item-subtitle>
             </v-list-item-content>
@@ -63,6 +63,14 @@
             </v-list-item-action>
           </v-list-item>
         </v-list>
+        <v-card-actions v-else>
+          <v-spacer />
+          <v-btn color="primary" @click="dialog = true">
+            <v-icon left>mdi-plus</v-icon>
+            Create A New Project
+          </v-btn>
+          <v-spacer />
+        </v-card-actions>
       </v-card>
       <v-dialog
         v-model="dialog"
@@ -149,14 +157,13 @@ export default {
       if (!this.name.trim()) return;
       const { Project, File } = this.$FeathersVuex;
       const project = new Project({
-        name: this.name,
+        name: this.name.trim(),
         desc: this.desc,
         ref: this.ref,
-        ...(this.id !== null ? { _id: this.id } : {}),
+        ...(this.id ? { _id: this.id } : {}),
       });
       await project.save();
-      if (this.id === null) {
-        this.setCurrentProject(project);
+      if (!this.id) {
         const file = new File({
           name: `${project.ref}.ino`,
           ref: `${project.ref}/${project.ref}.ino`,

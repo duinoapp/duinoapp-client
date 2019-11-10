@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-navigation-drawer app clipped permanent>
-      <v-list dense class="pt-0">
+      <v-list class="pt-0">
         <v-list-item flat to="/tools/projects">
           <v-list-item-icon><v-icon left>mdi-wrench</v-icon></v-list-item-icon>
           <v-list-item-content>
