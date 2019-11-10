@@ -47,5 +47,10 @@ export default {
       //
     };
   },
+  mounted() {
+    this.$currentStore.load('boards');
+    this.$currentStore.load('projects');
+    this.$currentStore.load('files');
+  },
 };
 </script>

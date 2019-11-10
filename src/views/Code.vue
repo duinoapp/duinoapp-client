@@ -1,5 +1,20 @@
 <template>
-  <v-content class="code">
-    <h1>This is an code page</h1>
-  </v-content>
+  <div>
+    <v-navigation-drawer app clipped permanent>
+      <files-tree />
+    </v-navigation-drawer>
+    <v-content>
+    </v-content>
+  </div>
 </template>
+
+
+<script>
+import FilesTree from '../components/files/tree.vue';
+
+export default {
+  components: {
+    FilesTree,
+  },
+};
+</script>

@@ -132,7 +132,6 @@ class CompileServer extends EventEmitter {
       }
       return board.save();
     }));
-    this.Vue.$currentStore.load('boards');
     console.log('saving libs');
     const start = Date.now();
     await chunk(libraries, 20).reduce((a, libs) => new Promise(async (resolve) => {

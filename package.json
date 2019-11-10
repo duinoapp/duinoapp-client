@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@feathersjs/feathers": "^3.3.1",
-    "@mdi/font": "^2.6.95",
+    "@mdi/font": "^4.5.95",
     "core-js": "^2.6.10",
     "feathers-localstorage": "^4.0.0",
     "feathers-vuex": "^1.7.2",
