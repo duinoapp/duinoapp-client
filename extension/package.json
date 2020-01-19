@@ -1,0 +1,39 @@
+{
+  "name": "chrome-serialport",
+  "version": "0.1.2",
+  "description": "Exposes a node-serialport compliant interface to front end javascript",
+  "main": "lib/chrome-serial.js",
+  "dependencies": {
+    "browser-serialport": "^2.0.1"
+  },
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "del": "^1.1.1",
+    "gulp": "^3.8.7",
+    "mocha": "^2.1.0",
+    "mocha-loader": "^0.7.1",
+    "sinon": "^1.12.2",
+    "webpack": "^1.4.15"
+  },
+  "scripts": {
+    "test": "gulp && gulp tests && beefy --index=index.html --cwd=tests/build/ 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacobrosenthal/chrome-serialport"
+  },
+  "bugs": {
+    "url": "https://github.com/jacobrosenthal/chrome-serialport/issues"
+  },
+  "keywords": [
+    "serial",
+    "firmata",
+    "nodebots",
+    "chromebots",
+    "browserbots",
+    "robot",
+    "robots"
+  ],
+  "author": "Jacob Rosenthal @jacobrosenthal",
+  "license": "MIT"
+}

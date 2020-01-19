@@ -118,6 +118,7 @@ export default {
       this.$serial.on('errorPrompt', (reason) => {
         if (reason === 'access_denied') this.accessDeniedDialog = true;
       });
+      console.log(this.$serial);
       if (this.$serial.implementation === 'basic') {
         this.noSerialDialog = true;
       }

@@ -43,10 +43,15 @@ const meta = () => ({
 
 const store = new Vuex.Store({
   state: {
-
+    serialShelf: false,
   },
   mutations: {
-
+    toggleSerialStore(state) {
+      state.serialShelf = !state.serialShelf;
+    },
+  },
+  getters: {
+    serialShelf(state) { return state.serialShelf; },
   },
   actions: {
 
@@ -66,6 +71,10 @@ const store = new Vuex.Store({
           ...meta(),
         };
       },
+      state: {
+        setCurrentOnGet: false,
+        setCurrentOnCreate: false,
+      },
     }),
     service('files', {
       instanceDefaults(data) {
@@ -80,6 +89,10 @@ const store = new Vuex.Store({
           main: false,
           ...meta(),
         };
+      },
+      state: {
+        setCurrentOnGet: false,
+        setCurrentOnCreate: false,
       },
     }),
     service('servers', {
@@ -97,6 +110,10 @@ const store = new Vuex.Store({
           isCustom: true,
           ...meta(),
         };
+      },
+      state: {
+        setCurrentOnGet: false,
+        setCurrentOnCreate: false,
       },
     }),
     service('boards', {
@@ -122,6 +139,10 @@ const store = new Vuex.Store({
           ...meta(),
         };
       },
+      state: {
+        setCurrentOnGet: false,
+        setCurrentOnCreate: false,
+      },
     }),
     service('cores', {
       instanceDefaults(data) {
@@ -130,6 +151,10 @@ const store = new Vuex.Store({
           ...meta(),
         };
       },
+      state: {
+        setCurrentOnGet: false,
+        setCurrentOnCreate: false,
+      },
     }),
     service('libraries', {
       instanceDefaults(data) {
@@ -137,6 +162,10 @@ const store = new Vuex.Store({
           id: genId(data.name, 'libraries'),
           ...meta(),
         };
+      },
+      state: {
+        setCurrentOnGet: false,
+        setCurrentOnCreate: false,
       },
     }),
     service('settings', {
@@ -147,6 +176,10 @@ const store = new Vuex.Store({
           value: null,
           ...meta(),
         };
+      },
+      state: {
+        setCurrentOnGet: false,
+        setCurrentOnCreate: false,
       },
     }),
   ],

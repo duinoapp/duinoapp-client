@@ -21,8 +21,10 @@
       <files-tree />
     </v-navigation-drawer>
     <v-content>
-      <file-editor />
+      <file-editor v-if="currentProject" />
+      <project-manager v-else />
     </v-content>
+
   </div>
 </template>
 
@@ -32,12 +34,14 @@ import { mapGetters } from 'vuex';
 import FilesTree from '../components/files/tree.vue';
 import FileEditor from '../components/files/editor.vue';
 import RecentList from '../components/recent-list.vue';
+import ProjectManager from '../components/projects/manager.vue';
 
 export default {
   components: {
     FilesTree,
     FileEditor,
     RecentList,
+    ProjectManager,
   },
   computed: {
     ...mapGetters('projects', { currentProject: 'current' }),

@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import io from 'socket.io-client';
 import stats from 'stats-lite';
 import omit from 'lodash/omit';
+import uuid3 from 'uuid/v3';
 import store from '../store';
 import serial from './serial';
 
@@ -10,10 +11,13 @@ const chunk = (arr, size) => Array.from(
   (v, i) => arr.slice(i * size, i * size + size),
 );
 
+
+const genId = (value, serv) => uuid3(value, store.namespaces[serv]);
+
 class CompileServer extends EventEmitter {
   constructor() {
     super();
-    this.url = 'http://localhost:3030';
+    this.url = null;
     this.socket = null;
     store.subscribe((mutation) => {
       if (mutation.type === 'servers/setCurrent') {
@@ -88,6 +92,7 @@ class CompileServer extends EventEmitter {
 
   setServer(serverConfig) {
     this.url = serverConfig.address;
+    this.server = serverConfig;
     // window.localStorage.existingAddress = this.url;
     console.log(`loading server: ${this.url}`);
     this.load();
@@ -96,29 +101,39 @@ class CompileServer extends EventEmitter {
   async load() {
     const { Core, Board, Library } = this.Vue.$FeathersVuex;
     await this.connect();
-    const cores = (await this.socket.emitAsync('info.cores')).map(core => new Core({ ...omit(core, ['id']), coreId: core.id }));
-    const boards = (await this.socket.emitAsync('info.boards')).map(board => new Board(board));
-    const libraries = (await this.socket.emitAsync('info.libraries')).map(lib => new Library(lib));
+    const cores = (await this.socket.emitAsync('info.cores')); // .map(core => new Core({ ...omit(core, ['id']), coreId: core.id }));
+    const boards = (await this.socket.emitAsync('info.boards')); // .map(board => new Board(board));
+    const libraries = (await this.socket.emitAsync('info.libraries')); // .map(lib => new Library(lib));
     this.disconnect();
-    await Promise.all(
-      (await Core.find()).map(core => !cores.some(c => c.id === core.id) && core.remove()),
-    );
-    await Promise.all(
-      (await Board.find()).map(board => !boards.some(b => b.id === board.id) && board.remove()),
-    );
-    await Promise.all(
-      (await Library.find()).map(lib => !libraries.some(l => l.id === lib.id) && lib.remove()),
-    );
+    // await Promise.all(
+    //   (await Core.find()).map(core => !cores.some(c => c.id === core.id) && core.remove()),
+    // );
+    // await Promise.all(
+    //   (await Board.find()).map(board => !boards.some(b => b.id === board.id) && board.remove()),
+    // );
+    // await Promise.all(
+    //   (await Library.find()).map(lib => !libraries.some(l => l.id === lib.id) && lib.remove()),
+    // );
 
     console.log('saving cores');
-    await Promise.all(cores.map(
-      core => (Core.findInStore({ query: { id: core.id } }).data[0] || core).save(),
+    const existingCores = (await Core.find()).reverse();
+    console.log('saving cores', existingCores.length);
+    const coreIds = await Promise.all(cores.map(
+      async (core) => {
+        const coreId = genId(core.id, 'cores');
+        if (!existingCores.some(ecore => ecore.id === coreId)) {
+          await (new Core({ ...omit(core, ['id']), coreId: core.id })).save();
+        }
+        return coreId;
+      },
     ));
     console.log('saving boards');
-    await Promise.all(boards.map(async (board) => {
-      const existing = Board.findInStore({ query: { id: board.id } }).data[0];
+    const existingBoards = (await Board.find()).reverse();
+    console.log('saving boards', existingBoards.length);
+    const boardIds = await Promise.all(boards.map(async (board) => {
+      const boardId = genId(board.fqbn, 'boards');
+      const existing = existingBoards.find(eboard => eboard.id === boardId);
       // eslint-disable-next-line no-param-reassign
-      if (existing) board._id = existing._id;
       if (existing && board.config_options) {
         board.config_options.forEach((option) => {
           const exOption = existing.config_options.find(opt => opt.option === option.option);
@@ -129,20 +144,44 @@ class CompileServer extends EventEmitter {
             selected: exOption.values.some(val => val.value === value.value && val.selected),
           }));
         });
+        existing.config_options = board.config_options;
+        existing.name = board.name;
+        await existing.save();
       }
-      return board.save();
+      if (!existing) {
+        await (new Board(board)).save();
+      }
+      return boardId;
     }));
     console.log('saving libs');
     const start = Date.now();
-    await chunk(libraries, 20).reduce((a, libs) => new Promise(async (resolve) => {
-      await a;
-      setTimeout(resolve, 10);
-      await Promise.all(libs.map(lib => (
-        Library.findInStore({ query: { id: lib.id } }).data[0]
-        || lib
-      ).save()));
-    }));
+    const existingLibs = (await Library.find()).reverse();
+    console.log('saving libs', existingLibs.length);
+    const libIds = await chunk(libraries, 10).reduce((a, libs) => new Promise(async (resolve) => {
+      const b = await a;
+      // setTimeout(resolve, 50);
+      setTimeout(() => requestAnimationFrame(async () => {
+        const c = await Promise.all(libs.map(async (lib) => {
+          const libId = genId(lib.name, 'libraries');
+          if (!existingLibs.some(elib => elib.id === libId)) {
+            await (new Library(omit(lib, ['resources']))).save();
+          }
+          return libId;
+        }));
+        resolve([...b, ...c]);
+      }), 50);
+    }), Promise.resolve([]));
     console.log('finished loading server details', Date.now() - start);
+    await Promise.all(
+      (await Core.find({ query: { id: { $nin: coreIds } } })).map(core => core.remove()),
+    );
+    await Promise.all(
+      (await Board.find({ query: { id: { $nin: boardIds } } })).map(board => board.remove()),
+    );
+    await Promise.all(
+      (await Library.find({ query: { id: { $nin: libIds } } })).map(lib => lib.remove()),
+    );
+    console.log('cleaned old fields');
   }
 
   connect(silent = false) {
@@ -174,7 +213,7 @@ class CompileServer extends EventEmitter {
   _getFqbn() {
     const board = store.getters['boards/current'];
     if (!board) return 'arduino:avr:uno';
-    return Object.keys(board.selected).reduce((a, i) => `${a}:${i}=${board.selected[i]}`, board.fqbn);
+    return Object.keys(board.config).reduce((a, i) => `${a}:${i}=${board.config[i]}`, board.fqbn);
   }
 
   async compile(close = true) {
@@ -183,12 +222,12 @@ class CompileServer extends EventEmitter {
     this.emit('console.progress', { percent: 0 * mod, message: 'Connecting to compile server...' });
     await this.connect();
     this.emit('console.progress', { percent: 0.05 * mod, message: 'Uploading current code files...' });
-    await this._setSketch();
+    // await this._setSketch();
     const project = store.getters['projects/current'];
-    const files = store.getters['files.find']({ query: { _id: { $in: project.files } } }).data
-      .map(f => ({ ...f, name: `${project.ref}/${f.name}` }));
+    const files = store.getters['files/find']({ query: { projectId: project.id } }).data
+      .map(f => ({ content: f.body, name: `${project.ref}/${f.name}` }));
     this.emit('console.progress', { percent: 0.25 * mod, message: 'Compiling code...' });
-    const err = await this.socket.emitAsync('program.compile', { fqbn: this._getFqbn(), files });
+    const err = await this.socket.emitAsync('compile.start', { fqbn: this._getFqbn(), files });
     if (err) {
       this.emit('console.error', err);
       throw new Error(err);
@@ -216,7 +255,7 @@ class CompileServer extends EventEmitter {
     serial.on('data', dataUp);
     this.socket.on(`upload.dataDown.${id}`, dataDown);
 
-    const err = await this.socket.emitAsync('program.upload', { id, fqbn: this._getFqbn() });
+    const err = await this.socket.emitAsync('upload.start', { id, fqbn: this._getFqbn() });
     if (err) {
       this.emit('console.error', err);
     } else {
