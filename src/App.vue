@@ -16,6 +16,7 @@
         <v-btn text dense to="/tools/about"><v-icon left>mdi-information</v-icon>About</v-btn>
         <v-spacer/>
         <compile-btn />
+        <upload-btn />
         <v-btn text dense @click="toggleSerialShelf"><v-icon left>mdi-console</v-icon>Serial</v-btn>
       </v-app-bar>
     </div>
@@ -51,6 +52,7 @@ import ServerFooter from './components/servers/footer-btn.vue';
 import SerialFooter from './components/serial/footer-btn.vue';
 import SerialPrompts from './components/serial/prompts.vue';
 import CompileBtn from './components/program/compile.vue';
+import UploadBtn from './components/program/upload.vue';
 import CompileConsole from './components/program/console.vue';
 
 export default {
@@ -62,6 +64,7 @@ export default {
     SerialFooter,
     CompileBtn,
     CompileConsole,
+    UploadBtn,
   },
   data() {
     return {

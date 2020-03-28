@@ -4,7 +4,7 @@ import stats from 'stats-lite';
 import omit from 'lodash/omit';
 import uuid3 from 'uuid/v3';
 import store from '../store';
-import serial from './serial';
+// import serial from './serial';
 
 const chunk = (arr, size) => Array.from(
   { length: Math.ceil(arr.length / size) },
@@ -241,28 +241,32 @@ class CompileServer extends EventEmitter {
   }
 
   async upload() {
-    if (!serial || !serial.currentDevice) {
+    if (!this.Vue.$serial || !this.Vue.$serial.currentDevice) {
       this.emit('console.error', { message: 'Device that you want to program needs to be plugged in.', cause: 'Disconnected device.' });
       return;
     }
     await this.compile(false);
     this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
     const id = Math.random().toString(16).substr(2);
-    serial.setMute(true);
+    this.Vue.$serial.setMute(true);
 
     const dataUp = buff => this.socket.emit(`upload.dataUp.${id}`, buff);
-    const dataDown = buff => serial.writeBuff(buff);
-    serial.on('data', dataUp);
+    const dataDown = buff => this.Vue.$serial.writeBuff(buff);
+    this.Vue.$serial.on('data', dataUp);
     this.socket.on(`upload.dataDown.${id}`, dataDown);
 
-    const err = await this.socket.emitAsync('upload.start', { id, fqbn: this._getFqbn() });
+    const project = store.getters['projects/current'];
+    const files = store.getters['files/find']({ query: { projectId: project.id } }).data
+      .map(f => ({ content: f.body, name: `${project.ref}/${f.name}` }));
+
+    const err = await this.socket.emitAsync('upload.start', { id, fqbn: this._getFqbn(), files });
     if (err) {
       this.emit('console.error', err);
     } else {
       this.emit('console.progress', { percent: 1.0, message: 'Done!' });
     }
 
-    serial.off('data', dataUp);
+    this.Vue.$serial.off('data', dataUp);
     this.socket.off(`upload.dataDown.${id}`, dataDown);
   }
 }
