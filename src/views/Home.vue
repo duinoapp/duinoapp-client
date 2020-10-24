@@ -1,7 +1,7 @@
 <template>
-  <v-content>
+  <v-main>
     <HelloWorld />
-  </v-content>
+  </v-main>
 </template>
 
 <script>

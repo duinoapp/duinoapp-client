@@ -41,9 +41,9 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-content>
+    <v-main style="padding-left:256px">
       <router-view/>
-    </v-content>
+    </v-main>
   </div>
 </template>
 

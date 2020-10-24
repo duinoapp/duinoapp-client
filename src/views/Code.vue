@@ -20,17 +20,15 @@
       <v-divider />
       <files-tree />
     </v-navigation-drawer>
-    <v-content>
+    <v-main style="padding-left:256px">
       <file-editor v-if="currentProject" />
       <project-manager v-else />
-    </v-content>
+    </v-main>
 
   </div>
 </template>
 
-
 <script>
-import { mapGetters } from 'vuex';
 import FilesTree from '../components/files/tree.vue';
 import FileEditor from '../components/files/editor.vue';
 import RecentList from '../components/recent-list.vue';
@@ -44,7 +42,9 @@ export default {
     ProjectManager,
   },
   computed: {
-    ...mapGetters('projects', { currentProject: 'current' }),
+    currentProject() {
+      return this.$store.getters['projects/find']({ query: { id: this.$store.getters.currentProject } }).data[0];
+    },
   },
 };
 </script>

@@ -50,7 +50,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn text href="https://caniuse.com/#feat=webusb" target="_blank">Which Browser Can I Use?</v-btn>
+          <!-- <v-btn text href="https://caniuse.com/#feat=webusb" target="_blank">Which Browser Can I Use?</v-btn> -->
           <v-btn href="https://www.google.com/chrome/" color="primary">Get Chrome</v-btn>
         </v-card-actions>
       </v-card>

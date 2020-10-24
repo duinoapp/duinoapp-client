@@ -1,10 +1,11 @@
 <template>
   <v-menu top v-model="menu" offset-y>
+    <!-- eslint-disable-next-line vue/no-unused-vars -->
     <template v-slot:activator="{ on }">
-      <v-btn text dense small v-on="on" v-if="currentDevice">
+      <v-btn text dense small @click="activate" v-if="currentDevice">
         Serial: {{deviceName}}
       </v-btn>
-      <v-btn text dense small v-on="on" v-else>Select Device Port</v-btn>
+      <v-btn text dense small @click="activate" v-else>Select Device Port</v-btn>
     </template>
     <v-list dense :style="{ padding: '0' }">
       <v-list-item
@@ -41,7 +42,9 @@ export default {
   computed: {
     deviceName() {
       if (!this.currentDevice) return '';
-      return (this.devices.find(d => d.value === this.currentDevice) || { name: 'Unknown' }).name;
+      return (this.devices.find((d) => d.value === this.currentDevice) || {
+        name: this.$serial.handlesSelect ? 'Selected' : 'Unknown',
+      }).name;
     },
   },
   watch: {
@@ -52,6 +55,15 @@ export default {
   mounted() {
     this.currentDevice = this.$serial.currentDevice || null;
     this.$serial.on('currentDevice', (value) => { this.currentDevice = value; });
+  },
+  methods: {
+    activate() {
+      if (this.$serial.handlesSelect) {
+        this.$serial.requestDevice();
+      } else {
+        this.menu = true;
+      }
+    },
   },
 };
 </script>

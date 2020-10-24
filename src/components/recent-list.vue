@@ -47,6 +47,9 @@ export default {
     };
   },
   computed: {
+    modelName() {
+      return this.$FeathersVuex.api.byServicePath[this.service].modelName;
+    },
     findItems() {
       if (!this.service) return () => ({ data: [] });
       return this.$store.getters[`${this.service}/find`];
@@ -54,18 +57,20 @@ export default {
     currentItem() {
       let current;
       if (this.service) {
-        current = this.$store.getters[`${this.service}/current`];
+        [current] = this.$store.getters[`${this.service}/find`]({
+          query: { id: this.$store.getters[`current${this.modelName}`] },
+        }).data;
       }
       return current;
     },
     items() {
       return this.findItems({ query }).data
-        .filter(item => !this.currentItem || item.id !== this.currentItem.id);
+        .filter((item) => !this.currentItem || item.id !== this.currentItem.id);
     },
   },
   methods: {
     setCurrent(item) {
-      return this.$store.commit(`${this.service}/setCurrent`, item);
+      return this.$store.commit(`setCurrent${this.modelName}`, item.id);
     },
   },
   mounted() {

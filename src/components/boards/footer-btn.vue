@@ -13,7 +13,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
 
 export default {
   data() {
@@ -22,7 +21,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters('boards', { currentBoard: 'current' }),
+    currentBoard() {
+      const { Board } = this.$FeathersVuex.api;
+      return Board.findInStore({ query: { id: this.$store.getters.currentBoard } }).data[0];
+    },
   },
 };
 </script>

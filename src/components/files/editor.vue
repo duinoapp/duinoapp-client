@@ -13,7 +13,6 @@
 
 <script>
 import MonacoEditor from 'vue-monaco';
-import { mapGetters } from 'vuex';
 import get from 'lodash/get';
 import set from 'lodash/set';
 
@@ -27,7 +26,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters('files', { currentFile: 'current' }),
+    currentFile() {
+      const { File } = this.$FeathersVuex.api;
+      return File.findInStore({ query: { id: this.$store.getters.currentFile } }).data[0] || {};
+    },
     code() { return get(this.currentFile, 'editor.body') || get(this.currentFile, 'body') || ''; },
   },
   methods: {

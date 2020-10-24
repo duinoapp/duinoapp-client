@@ -103,6 +103,9 @@ export class SerialPort extends EventEmitter {
               self.port = null;
               self.emit('close');
             },
+            onOpen() {
+              self.emit('open');
+            },
             data() {
               if (has(msg, 'data.data')) {
                 self.emit('data', Buffer.from(msg.data.data));
@@ -118,7 +121,6 @@ export class SerialPort extends EventEmitter {
         };
 
         self.port.onMessage.addListener(handleMessage);
-        self.emit('open');
         return callback();
       });
   }
@@ -138,7 +140,6 @@ export class SerialPort extends EventEmitter {
       this.port.postMessage(data);
     }
 
-
     return callback(chrome.runtime.lastError);
   }
 
@@ -147,6 +148,24 @@ export class SerialPort extends EventEmitter {
     if (!callback) { callback = () => {}; }
 
     chrome.runtime.sendMessage(extensionId, { op: 'flush' },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          return callback(chrome.runtime.lastError);
+        }
+
+        if (response && response.error) {
+          return callback(new Error(response.error));
+        }
+
+        return callback(null, response.data);
+      });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  set(signals, callback) {
+    if (!callback) { callback = () => {}; }
+
+    chrome.runtime.sendMessage(extensionId, { op: 'set', signals },
       (response) => {
         if (chrome.runtime.lastError) {
           return callback(chrome.runtime.lastError);

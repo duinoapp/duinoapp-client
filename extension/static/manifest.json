@@ -1,0 +1,28 @@
+{
+  "background": {
+    "scripts": [ "main.bundle.js"]
+  },
+  "description": "Micro Controller Programmer",
+  "externally_connectable": { 
+  "matches": [
+    "*://localhost/*",
+    "*://duino.app/*"
+  ]},
+  "manifest_version": 2,
+  "name": "Chromeduino 3.0",
+  "permissions": [ "serial" ],
+  "version": "3.0.1",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "browser_action": {
+    "default_icons": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
+    "default_title": "DuinoApp"
+  }
+}

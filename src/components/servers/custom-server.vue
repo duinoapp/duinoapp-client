@@ -34,7 +34,6 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
 import PingBubble from './ping-bubble.vue';
 
 export default {
@@ -50,10 +49,9 @@ export default {
     };
   },
   methods: {
-    ...mapMutations('servers', ['setCurrent']),
     async checkUrl() {
       if (!this.url) return;
-      const { Server } = this.$FeathersVuex;
+      const { Server } = this.$FeathersVuex.api;
       this.serverData = null;
       this.err = '';
       if ((await Server.find({ query: { address: this.url.trim() } })).length) {
@@ -61,33 +59,34 @@ export default {
         return;
       }
       try {
-        this.serverData = await this.$compiler.pingServer(this.url.trim(), 500);
+        this.serverData = await this.$compiler.pingServer(this.url.trim(), 5000);
       } catch (err) {
         console.error(err);
         this.err = 'Invalid server address.';
       }
       if (this.serverData && this.serverData.ping <= 0) {
+        console.log(this.serverData);
         this.err = 'Unable to connect to the server.';
       }
     },
     async addServer() {
       await this.checkUrl();
       if (!this.serverData || this.serverData.ping <= 0) return;
-      const { Server } = this.$FeathersVuex;
+      const { Server } = this.$FeathersVuex.api;
       const server = new Server({ ...this.serverData, isCustom: true, address: this.url });
       await server.save();
       this.url = '';
       this.serverData = {};
       this.success = true;
-      this.setCurrent(server);
+      this.$store.commit('setCurrentServer', server.id);
     },
   },
 };
 </script>
 
-<style lang="stylus" scoped>
+<style lang="scss" scoped>
 div {
-  display flex
-  align-items baseline
+  display: flex;
+  align-items: baseline;
 }
 </style>

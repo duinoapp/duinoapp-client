@@ -9,9 +9,7 @@ import { mapGetters } from 'vuex';
 
 export default {
   computed: {
-    ...mapGetters('boards', { currentBoard: 'current' }),
-    ...mapGetters('projects', { currentProject: 'current' }),
-    ...mapGetters('servers', { currentServer: 'current' }),
+    ...mapGetters(['currentBoard', 'currentProject', 'currentServer']),
     valid() {
       return !!(
         this.currentServer

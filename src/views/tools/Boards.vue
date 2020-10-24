@@ -40,11 +40,18 @@
             two-line
           >
             <v-list-item-content>
-              <v-list-item-title
-                :class="currentBoard && currentBoard.id === board.id ? 'primary--text' : undefined"
-              >
-                {{board.name}}
-              </v-list-item-title>
+              <v-tooltip top>
+                <template #activator="{ on }">
+                  <v-list-item-title
+                    v-on="on"
+                    :class="currentBoard && currentBoard.id === board.id
+                      ? 'primary--text' : undefined"
+                  >
+                    {{board.name}}
+                  </v-list-item-title>
+                </template>
+                <span>{{board.name}}</span>
+              </v-tooltip>
               <v-list-item-subtitle>
                 {{
                   (cores.find(core => board.fqbn.includes(`${core.coreId}:`)) || { name: '' }).name
@@ -53,6 +60,9 @@
             </v-list-item-content>
           </v-list-item>
         <v-list-group
+          v-show="findBoards({
+            query: { supported: true, fqbn: new RegExp(`^${core.coreId}:`) },
+          }).total"
           v-for="core in this.search.trim() ? [] : cores"
           :key="core.id"
           :value="currentBoard && currentBoard.fqbn.includes(`${core.coreId}:`)"
@@ -70,13 +80,19 @@
           </template>
 
           <v-list-item
-            v-for="board in findBoards({ query: { fqbn: new RegExp(`^${core.coreId}:`) } }).data"
+            v-for="board in findBoards({
+              query: { supported: true, fqbn: new RegExp(`^${core.coreId}:`) },
+            }).data"
             :key="board.id"
             @click="setCurrent(board)"
             :input-value="currentBoard && currentBoard.id === board.id"
           >
-            <v-list-item-icon></v-list-item-icon>
-            <v-list-item-title>{{board.name}}</v-list-item-title>
+            <v-tooltip top>
+              <template #activator="{ on }">
+                <v-list-item-title v-on="on" class="pl-4">{{board.name}}</v-list-item-title>
+              </template>
+              <span>{{board.name}}</span>
+            </v-tooltip>
           </v-list-item>
         </v-list-group>
       </v-list>
@@ -116,7 +132,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters } from 'vuex';
 
 export default {
   data: () => ({
@@ -125,12 +141,12 @@ export default {
   }),
   computed: {
     ...mapGetters('cores', { findCores: 'find' }),
-    ...mapGetters('boards', { currentBoard: 'current', findBoards: 'find' }),
+    ...mapGetters('boards', { findBoards: 'find' }),
     cores() {
       const cores = this.findCores({ query: { $sort: { name: 1 } } }).data;
       return [
-        ...cores.filter(core => this.featured.includes(core.coreId)),
-        ...cores.filter(core => !this.featured.includes(core.coreId)),
+        ...cores.filter((core) => this.featured.includes(core.coreId)),
+        ...cores.filter((core) => !this.featured.includes(core.coreId)),
       ];
     },
     searchBoards() {
@@ -143,21 +159,43 @@ export default {
         },
       }).data;
     },
+    currentBoard() {
+      const { Board } = this.$FeathersVuex.api;
+      return Board.findInStore({ query: { id: this.$store.getters.currentBoard } }).data[0];
+    },
   },
   methods: {
-    ...mapMutations('boards', ['setCurrent']),
     updateValue(configi, value) {
-      (new this.$FeathersVuex.Board({
-        ...this.currentBoard,
-        config_options: this.currentBoard.config_options.map((con, i) => (configi !== i ? con : {
+      // eslint-disable-next-line camelcase
+      const config_options = this.currentBoard.config_options.map((con, i) => (configi !== i
+        ? con
+        : {
           ...con,
-          values: con.values.map(val => ({
+          values: con.values.map((val) => ({
             ...val,
             selected: val.value === value,
-          })),
-        })),
+          }
+          )),
+        }));
+
+      const config = config_options.reduce((a, con) => {
+        // eslint-disable-next-line no-param-reassign
+        a[con.option] = (con.values.find((val) => val.selected) || {}).value;
+        return a;
+      }, {});
+      (new this.$FeathersVuex.api.Board({
+        ...this.currentBoard,
+        config_options,
+        config,
       })).save();
     },
+    setCurrent(item) {
+      this.$store.commit('setCurrentBoard', item.id);
+    },
+  },
+  mounted() {
+    const { Board } = this.$FeathersVuex.api;
+    Board.find({ query: { $limit: 9999 } });
   },
 };
 </script>

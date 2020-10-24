@@ -24,23 +24,54 @@
     <router-view />
 
     <v-navigation-drawer
-      app clipped
+      v-model="serialShelf.value"
+      mobile-breakpoint="9999999"
+      style="bottom: 40px"
+      class="elevation-0"
+      app
       absolue
-      :permanent="serialShelf.value"
-      hide-overlay
-      right
-      :value="serialShelf.value"
-      width="400px"
+      bottom
     >
-      <compile-console />
+      <v-row align="center">
+        <v-col cols="auto" class="pa-0">
+          <v-tabs
+            v-model="tab"
+          >
+            <v-tab href="#program">Program</v-tab>
+            <v-tab href="#monitor">Monitor</v-tab>
+            <v-tab href="#plotter">Plot</v-tab>
+          </v-tabs>
+        </v-col>
+        <v-spacer />
+        <v-col cols="auto" class="py-0 mr-6">
+          <compile-btn />
+          <upload-btn />
+          <v-btn icon @click="toggleSerialShelf">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-tabs-items v-model="tab">
+        <v-tab-item value="program">
+          <compile-console />
+        </v-tab-item>
+        <v-tab-item value="monitor">
+          <serial-monitor />
+        </v-tab-item>
+        <v-tab-item value="plotter">
+          graph coming soon
+        </v-tab-item>
+      </v-tabs-items>
     </v-navigation-drawer>
 
-    <v-footer dense app>
-      <div>&copy; {{ new Date().getFullYear() }}</div>
-      <v-spacer/>
-      <serial-footer v-if="serialReady" />
-      <board-footer />
-      <server-footer />
+    <v-footer dense app style="z-index: 10">
+      <v-row>
+        <div>Duino App &copy; {{ new Date().getFullYear() }}</div>
+        <v-spacer/>
+        <serial-footer v-if="serialReady" />
+        <board-footer />
+        <server-footer />
+      </v-row>
     </v-footer>
     <serial-prompts />
   </v-app>
@@ -51,6 +82,7 @@ import BoardFooter from './components/boards/footer-btn.vue';
 import ServerFooter from './components/servers/footer-btn.vue';
 import SerialFooter from './components/serial/footer-btn.vue';
 import SerialPrompts from './components/serial/prompts.vue';
+import SerialMonitor from './components/serial/monitor.vue';
 import CompileBtn from './components/program/compile.vue';
 import UploadBtn from './components/program/upload.vue';
 import CompileConsole from './components/program/console.vue';
@@ -62,6 +94,7 @@ export default {
     BoardFooter,
     SerialPrompts,
     SerialFooter,
+    SerialMonitor,
     CompileBtn,
     CompileConsole,
     UploadBtn,
@@ -70,6 +103,7 @@ export default {
     return {
       serialReady: false,
       serialShelf: {},
+      tab: 'program',
     };
   },
   methods: {
@@ -78,7 +112,7 @@ export default {
       else setTimeout(() => this.checkSerialReady(), 100);
     },
     async loadSerialShelfSetting() {
-      const { Setting } = this.$FeathersVuex;
+      const { Setting } = this.$FeathersVuex.api;
       const settings = await Setting.find({ query: { key: 'serial.shelf' } });
       let setting;
       if (!settings.length) {
@@ -89,7 +123,7 @@ export default {
         await setting.save();
       } else {
         setting = settings.shift();
-        settings.forEach(set => set.remove()); // remove any duplicates
+        settings.forEach((set) => set.remove()); // remove any duplicates
       }
       this.serialShelf = setting;
     },
@@ -100,11 +134,11 @@ export default {
     },
   },
   mounted() {
-    this.$currentStore.load('boards');
-    this.$currentStore.load('projects');
-    this.$currentStore.load('files');
+    console.log(this.$FeathersVuex);
     this.loadSerialShelfSetting();
     this.checkSerialReady();
+    this.$FeathersVuex.api.File.find();
+    this.$FeathersVuex.api.Project.find();
   },
 };
 </script>

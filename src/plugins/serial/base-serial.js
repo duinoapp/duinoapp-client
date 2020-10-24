@@ -17,6 +17,7 @@ class BaseSerial extends EventEmitter {
     this.requestRequired = false;
     this.mute = false;
     this.baud = 115200;
+    this.lastBaud = 115200;
     this.encoding = 'ascii';
     this.devices = [];
     this.currentDevice = null;
@@ -34,7 +35,7 @@ class BaseSerial extends EventEmitter {
   async requestDevice() { return {}; }
 
   async listDevices() {
-    const isDevices = await Promise.all(this.devices.map(device => this.isDevice(device.value)));
+    const isDevices = await Promise.all(this.devices.map((device) => this.isDevice(device.value)));
     return this.devices.filter((device, i) => isDevices[i]);
   }
 
@@ -42,9 +43,31 @@ class BaseSerial extends EventEmitter {
 
   async setCurrentDevice(value) { this.currentDevice = value; }
 
-  async setBaud(baud) { return baud; }
+  async setBaud(baud) {
+    console.log(1);
+    try {
+      await this.disconnect();
+    } catch (err) { Math.random(); }
+    console.log(2);
+    this.lastBaud = this.baud;
+    this.baud = baud;
+    await this.connect();
+    return baud;
+  }
+
+  async resetBaud() {
+    this.setBaud(this.lastBaud);
+  }
 
   async setMute(val) { this.mute = val; }
+
+  _transSignal(sig) {
+    if (sig === 'on' || sig === true) return { dtr: true, rts: true };
+    if (sig === 'off' || sig === false) return { dtr: false, rts: false };
+    return sig;
+  }
+
+  async setSignals(signals) { return signals; }
 
   async write(message) { return message; }
 
@@ -59,7 +82,7 @@ class BaseSerial extends EventEmitter {
   }
 
   async getDeviceName(value) {
-    return (this.devices.find(d => d.value === value) || { name: '' }).name;
+    return (this.devices.find((d) => d.value === value) || { name: '' }).name;
   }
 }
 

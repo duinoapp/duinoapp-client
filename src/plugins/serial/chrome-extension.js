@@ -16,14 +16,14 @@ class ExtensionSerial extends BaseSerial {
 
   async listDevices() {
     this.devices = (await this._listPromise())
-      .filter(dev => dev.manufacturer || dev.vendorId !== '0x0' || dev.productId !== '0x0')
-      .map(dev => ({ name: dev.comName, value: dev.comName }));
+      .filter((dev) => dev.manufacturer || dev.vendorId !== '0x0' || dev.productId !== '0x0')
+      .map((dev) => ({ name: dev.comName, value: dev.comName }));
     return this.devices;
   }
 
   async _getDevice(value) {
     const devices = await this._listPromise();
-    return devices.find(d => d.comName === value) || null;
+    return devices.find((d) => d.comName === value) || null;
   }
 
   async isDevice(value) {
@@ -45,9 +45,36 @@ class ExtensionSerial extends BaseSerial {
     }
   }
 
+  setSignals(signals) {
+    return new Promise((resolve, reject) => {
+      if (!this._port) reject(new Error('Cannot write to closed port.'));
+      else {
+        this._port.set(this._transSignal(signals), (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      }
+    });
+  }
+
+  drain() {
+    return new Promise((resolve, reject) => {
+      if (!this._port) reject(new Error('Cannot write to closed port.'));
+      else {
+        this._port.drain((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      }
+    });
+  }
+
   async writeBuff(buff) {
     if (!this._port) throw new Error('Cannot write to closed port.');
-    await this._port.write(buff);
+    console.log('down', Buffer.from(buff).toString('hex'));
+    await this._port.write({ data: Buffer.from(buff).toString('base64') });
+    // await this._port.flush();
+    // setTimeout(() => this._port.flush(), 10);
   }
 
   async write(message) {
@@ -58,37 +85,54 @@ class ExtensionSerial extends BaseSerial {
   connect() {
     return new Promise((resolve, reject) => {
       if (!this.currentDevice || this._port) {
+        console.log('connect', this.currentDevice, this._port);
         resolve();
         return;
       }
-      this._port = new SerialPort(this.currentDevice, { baudRate: this.baud }, null, (err) => {
-        if (err) {
-          this.emit('message', `<ERROR: ${err.message}>`);
-          reject(err);
-        }
-        this._port.on('data', (buff) => {
-          this.emit('data', buff);
-          if (!this.mute) this.emit('message', buff.toString(this.encoding));
-        });
-        this._port.on('close', () => {
-          this.connected = false;
-          this.emit('disconnect', this.currentDevice);
-          this._port = null;
-          this.currentDevice = null;
-        });
-        this._port.on('error', (error) => {
-          this.emit('message', `<ERROR: ${error.message}>`);
-        });
-        this.connected = true;
-        this.emit('connected', this.currentDevice);
-        resolve(this.currentDevice);
-      });
+      this._port = new SerialPort(
+        this.currentDevice,
+        { baudRate: this.baud },
+        true,
+        (err) => {
+          if (err) {
+            this.emit('message', `<ERROR: ${err.message}>`);
+            reject(err);
+          }
+          this._port.on('data', (buff) => {
+            console.log('up', buff, buff.toString('hex'));
+            this.emit('data', buff);
+            if (!this.mute) this.emit('message', buff.toString(this.encoding));
+          });
+          this._port.on('close', () => {
+            this.connected = false;
+            this.emit('disconnect', this.currentDevice);
+            this._port = null;
+            // this.currentDevice = null;
+          });
+          this._port.on('disconnect', () => {
+            this.connected = false;
+            this.emit('disconnect', this.currentDevice);
+            this._port = null;
+            // this.currentDevice = null;
+          });
+          this._port.on('error', (error) => {
+            this.emit('message', `<ERROR: ${error.message}>`);
+          });
+          this.connected = true;
+          this.emit('connected', this.currentDevice);
+          this.setSignals('on');
+          resolve(this.currentDevice);
+        },
+      );
     });
   }
 
-  async disconnect() {
-    if (!this._port) return;
-    this._port.close();
+  disconnect() {
+    return new Promise((resolve, reject) => {
+      if (!this._port) return;
+      this._port.once('disconnect', (err) => (err ? reject(err) : resolve()));
+      this._port.close();
+    });
   }
 }
 

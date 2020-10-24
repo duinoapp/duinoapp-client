@@ -139,7 +139,7 @@
   </v-container>
 </template>
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters } from 'vuex';
 import CustomServer from '../../components/servers/custom-server.vue';
 
 export default {
@@ -150,10 +150,13 @@ export default {
     info: false,
   }),
   computed: {
-    ...mapGetters('servers', { currentServer: 'current', find: 'find' }),
+    ...mapGetters('servers', { find: 'find' }),
+    currentServer() {
+      const { Server } = this.$FeathersVuex.api;
+      return Server.findInStore({ query: { id: this.$store.getters.currentServer } }).data[0] || {};
+    },
   },
   methods: {
-    ...mapMutations('servers', ['setCurrent']),
     pingClass(ping) {
       if (ping <= 100) return 'success--text';
       if (ping <= 250) return 'warning--text';
@@ -161,6 +164,9 @@ export default {
     },
     cleanLink(link) {
       return link.replace(/^https?:\/\//, '');
+    },
+    setCurrent(item) {
+      this.$store.commit('setCurrentServer', item.id);
     },
   },
 };

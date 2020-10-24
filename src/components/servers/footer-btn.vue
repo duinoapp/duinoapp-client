@@ -28,7 +28,11 @@ export default {
     };
   },
   computed: {
-    ...mapGetters('servers', { currentServer: 'current' }),
+    ...mapGetters({ currentServerId: 'currentServer' }),
+    currentServer() {
+      const { Server } = this.$FeathersVuex.api;
+      return Server.findInStore({ query: { id: this.currentServerId } }).data[0] || {};
+    },
   },
 };
 </script>

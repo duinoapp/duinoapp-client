@@ -105,7 +105,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters } from 'vuex';
 import snakeCase from 'lodash/snakeCase';
 import defaultCode from '@/assets/default-code.txt';
 
@@ -120,7 +120,11 @@ export default {
     };
   },
   computed: {
-    ...mapGetters('projects', { projectFind: 'find', currentProject: 'current' }),
+    ...mapGetters('projects', { projectFind: 'find' }),
+    currentProject() {
+      const { Project } = this.$FeathersVuex.api;
+      return Project.findInStore({ query: { id: this.$store.getters.currentProject } }).data[0] || {};
+    },
     projects() { return this.projectFind({ query: { $limit: 9999 } }).data; },
     ref() {
       if (!this.name.trim()) return '';
@@ -134,11 +138,13 @@ export default {
     },
   },
   methods: {
-    ...mapMutations('projects', { setCurrentProject: 'setCurrent' }),
+    setCurrentProject(item) {
+      this.$store.commit('setCurrentProject', item.id);
+    },
     async removeProject(project) {
-      const { File } = this.$FeathersVuex;
+      const { File } = this.$FeathersVuex.api;
       const files = await File.find({ query: { projectId: project.id } });
-      await Promise.all(files.map(file => file.remove()));
+      await Promise.all(files.map((file) => file.remove()));
       project.remove();
     },
     editProject(pro) {
@@ -155,7 +161,7 @@ export default {
     },
     async newProject() {
       if (!this.name.trim()) return;
-      const { Project, File } = this.$FeathersVuex;
+      const { Project, File } = this.$FeathersVuex.api;
       const project = new Project({
         name: this.name.trim(),
         desc: this.desc,
@@ -193,7 +199,7 @@ export default {
     },
   },
   mounted() {
-    const { Project } = this.$FeathersVuex;
+    const { Project } = this.$FeathersVuex.api;
     Project.find({ query: { $limit: 9999 } });
   },
 };

@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters } from 'vuex';
 import set from 'lodash/set';
 import get from 'lodash/get';
 
@@ -51,13 +51,21 @@ export default {
   computed: {
     ...mapGetters('files', { currentFile: 'current', findFiles: 'find' }),
     ...mapGetters('projects', { currentProject: 'current' }),
+    currentFile() {
+      const { File } = this.$FeathersVuex.api;
+      return File.findInStore({ query: { id: this.$store.getters.currentFile } }).data[0] || {};
+    },
+    currentProject() {
+      const { Project } = this.$FeathersVuex.api;
+      return Project.findInStore({ query: { id: this.$store.getters.currentProject } }).data[0] || {};
+    },
     items() {
       if (!this.currentProject) return [];
       const files = this.findFiles({
         query: { projectId: this.currentProject.id, $limit: 9999 },
       }).data;
       const filesObject = files.reduce((a, file) => set(a, file.name.replace(/\./g, '').replace(/\//g, '.'), file), {});
-      const processObject = obj => Object.keys(obj).reduce((a, i) => {
+      const processObject = (obj) => Object.keys(obj).reduce((a, i) => {
         if (!obj[i]._id) return [...a, { name: i, children: processObject(obj[i]) }];
         return [...a, obj[i]];
       }, []);
@@ -67,14 +75,13 @@ export default {
     active() { return this.rnd && [this.currentFile]; },
   },
   methods: {
-    ...mapMutations('files', ['setCurrent']),
     updateActive(item) {
       if (!item || !item.id) this.rnd = Math.random();
       else this.setCurrent(item);
     },
-  },
-  mounted() {
-    this.$FeathersVuex.File.find();
+    setCurrent(item) {
+      this.$store.commit('setCurrentFile', item.id);
+    },
   },
 };
 </script>
