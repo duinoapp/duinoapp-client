@@ -9,9 +9,9 @@ class Board extends BaseModel {
 
   // Define default properties here
   // eslint-disable-next-line class-methods-use-this
-  instanceDefaults(data) {
+  static instanceDefaults(data) {
     return {
-      id: genId(data.fqbn, 'boards'),
+      uuid: genId(data.fqbn, 'boards'),
       get config() {
         if (!this.config_options) return {};
         const config = {};

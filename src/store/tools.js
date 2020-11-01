@@ -29,3 +29,10 @@ export const meta = () => ({
     currentAt: moment().toJSON(),
   },
 });
+
+export const settingsDefaults = {
+  editor: {
+    autoSaveInterval: 10,
+    theme: 'vs',
+  },
+};

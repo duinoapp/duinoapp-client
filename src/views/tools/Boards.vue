@@ -34,9 +34,9 @@
         </v-list-item>
         <v-list-item
             v-for="board in searchBoards"
-            :key="board.id"
+            :key="board.uuid"
             @click="setCurrent(board)"
-            :input-value="currentBoard && currentBoard.id === board.id"
+            :input-value="currentBoard && currentBoard.uuid === board.uuid"
             two-line
           >
             <v-list-item-content>
@@ -44,7 +44,7 @@
                 <template #activator="{ on }">
                   <v-list-item-title
                     v-on="on"
-                    :class="currentBoard && currentBoard.id === board.id
+                    :class="currentBoard && currentBoard.uuid === board.uuid
                       ? 'primary--text' : undefined"
                   >
                     {{board.name}}
@@ -61,10 +61,10 @@
           </v-list-item>
         <v-list-group
           v-show="findBoards({
-            query: { supported: true, fqbn: new RegExp(`^${core.coreId}:`) },
+            query: { fqbn: new RegExp(`^${core.coreId}:`) },
           }).total"
           v-for="core in this.search.trim() ? [] : cores"
-          :key="core.id"
+          :key="core.uuid"
           :value="currentBoard && currentBoard.fqbn.includes(`${core.coreId}:`)"
         >
           <template v-slot:activator>
@@ -81,11 +81,11 @@
 
           <v-list-item
             v-for="board in findBoards({
-              query: { supported: true, fqbn: new RegExp(`^${core.coreId}:`) },
+              query: { fqbn: new RegExp(`^${core.coreId}:`) },
             }).data"
-            :key="board.id"
+            :key="board.uuid"
             @click="setCurrent(board)"
-            :input-value="currentBoard && currentBoard.id === board.id"
+            :input-value="currentBoard && currentBoard.uuid === board.uuid"
           >
             <v-tooltip top>
               <template #activator="{ on }">
@@ -161,7 +161,7 @@ export default {
     },
     currentBoard() {
       const { Board } = this.$FeathersVuex.api;
-      return Board.findInStore({ query: { id: this.$store.getters.currentBoard } }).data[0];
+      return Board.findInStore({ query: { uuid: this.$store.getters.currentBoard } }).data[0];
     },
   },
   methods: {
@@ -190,7 +190,7 @@ export default {
       })).save();
     },
     setCurrent(item) {
-      this.$store.commit('setCurrentBoard', item.id);
+      this.$store.commit('setCurrentBoard', item.uuid);
     },
   },
   mounted() {

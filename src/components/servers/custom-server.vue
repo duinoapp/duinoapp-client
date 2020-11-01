@@ -13,8 +13,7 @@
         <ping-bubble v-if="serverData && serverData.ping > 0" :ping="serverData.ping"/>
       </template>
     </v-text-field>
-    &nbsp;
-    <v-btn @click="addServer" :disabled="!serverData || serverData.ping <= 0">
+    <v-btn @click="addServer" :disabled="!serverData || serverData.ping <= 0" class="ml-2">
       <v-icon left>mdi mdi-plus</v-icon>
       Add Server
     </v-btn>
@@ -78,7 +77,7 @@ export default {
       this.url = '';
       this.serverData = {};
       this.success = true;
-      this.$store.commit('setCurrentServer', server.id);
+      this.$store.commit('setCurrentServer', server.uuid);
     },
   },
 };

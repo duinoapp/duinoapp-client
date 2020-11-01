@@ -1,9 +1,19 @@
 <template>
   <div>
-    <terminal ref="term" :cols="73" />
-    <v-row>
-      <v-col cols="2" class="py-0 mr-6">
+    <terminal ref="term" :height="height" />
+    <v-row class="px-4">
+      <v-col cols="2" class="py-0">
         <rate />
+      </v-col>
+      <v-col cols="auto" class="py-0 mr-6">
+        <v-tooltip top>
+          <template #activator="{ on }">
+            <v-btn icon @click="$refs.term.clear()" v-on="on">
+              <v-icon>mdi-cancel</v-icon>
+            </v-btn>
+          </template>
+          <span>Clear Monitor</span>
+        </v-tooltip>
       </v-col>
     </v-row>
   </div>
@@ -17,6 +27,12 @@ export default {
   components: {
     Terminal,
     Rate,
+  },
+  props: {
+    height: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
@@ -34,10 +50,9 @@ export default {
     };
     this.$serial.on('clear', this.clearCB);
   },
-
   beforeDestroy() {
-    this.$serial.on('message', this.logCB);
-    this.$serial.on('clear', this.clearCB);
+    if (this.logCB) this.$serial.on('message', this.logCB);
+    if (this.clearCB) this.$serial.on('clear', this.clearCB);
   },
 };
 </script>

@@ -6,7 +6,7 @@
     >
       <strong>{{ Math.ceil(percentage*100) }}% - {{message}}</strong>
     </v-progress-linear>
-    <terminal ref="term" :cols="73" />
+    <terminal ref="term" :height="height" />
   </div>
 </template>
 
@@ -16,6 +16,12 @@ import Terminal from '../terminal/terminal.vue';
 export default {
   components: {
     Terminal,
+  },
+  props: {
+    height: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
@@ -48,10 +54,12 @@ export default {
   },
 
   beforeDestroy() {
-    this.$compiler.off('console.progress', this.progressCB);
-    this.$compiler.off('console.log', this.logCB);
-    this.$compiler.off('console.error', this.logCB);
-    this.$compiler.off('console.clear', this.clearCB);
+    if (this.progressCB) this.$compiler.off('console.progress', this.progressCB);
+    if (this.logCB) {
+      this.$compiler.off('console.log', this.logCB);
+      this.$compiler.off('console.error', this.logCB);
+    }
+    if (this.clearCB) this.$compiler.off('console.clear', this.clearCB);
   },
 };
 </script>

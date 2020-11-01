@@ -5,7 +5,7 @@
     </v-list-item>
     <v-list-item
       v-for="item in items"
-      :key="item.id"
+      :key="item.uuid"
       @click="setCurrent(item)"
     >
       <v-list-item-title>{{get(item, itemText)}}</v-list-item-title>
@@ -58,19 +58,19 @@ export default {
       let current;
       if (this.service) {
         [current] = this.$store.getters[`${this.service}/find`]({
-          query: { id: this.$store.getters[`current${this.modelName}`] },
+          query: { uuid: this.$store.getters[`current${this.modelName}`] },
         }).data;
       }
       return current;
     },
     items() {
       return this.findItems({ query }).data
-        .filter((item) => !this.currentItem || item.id !== this.currentItem.id);
+        .filter((item) => !this.currentItem || item.uuid !== this.currentItem.uuid);
     },
   },
   methods: {
     setCurrent(item) {
-      return this.$store.commit(`setCurrent${this.modelName}`, item.id);
+      return this.$store.commit(`setCurrent${this.modelName}`, item.uuid);
     },
   },
   mounted() {

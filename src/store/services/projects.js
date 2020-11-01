@@ -9,7 +9,7 @@ class Project extends BaseModel {
   // Define default properties here
   static instanceDefaults(data) {
     return {
-      id: genId(data.ref, 'projects'),
+      uuid: genId(data.ref, 'projects'),
       name: '',
       desc: '',
       localPath: null,

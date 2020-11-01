@@ -6,14 +6,14 @@
   >
     <v-col cols="12" sm="8" md="6">
       &nbsp;
-      <v-card>
-        <v-card-title primary-title class="display-2">
+      <v-card outlined>
+        <v-card-title>
           Projects
           <v-spacer/>
           <v-tooltip top>
             <template v-slot:activator="{ on }">
-              <v-btn text icon large v-on="on" @click="dialog = true">
-                <v-icon large>mdi-plus</v-icon>
+              <v-btn text icon v-on="on" @click="dialog = true">
+                <v-icon>mdi-plus</v-icon>
               </v-btn>
             </template>
             <span>Create New Project</span>
@@ -23,19 +23,19 @@
           <v-divider/>
           <v-list-item
             v-for="proj in projects"
-            :key="proj._id"
+            :key="proj.uuid"
             @click="Math.random"
-            :class="currentProject && proj._id === currentProject._id ? 'primary--text' : ''"
+            :class="currentProject && proj.uuid === currentProject.uuid ? 'primary--text' : ''"
           >
             <v-list-item-content @click="setCurrentProject(proj)">
               <v-list-item-title>{{proj.name}}</v-list-item-title>
               <v-list-item-subtitle>{{proj.desc}}</v-list-item-subtitle>
             </v-list-item-content>
-            <v-list-item-action v-if="currentProject && currentProject._id === proj._id">
+            <v-list-item-action v-if="currentProject && currentProject.uuid === proj.uuid">
               <v-chip small color="primary" dark>Current</v-chip>
             </v-list-item-action>
             <v-list-item-action
-              v-if="projects.length > 1 && (!currentProject || currentProject._id !== proj._id)"
+              v-if="projects.length > 1 && (!currentProject || currentProject.uuid !== proj.uuid)"
             >
               <v-menu offset-y>
                 <template v-slot:activator="{ on }">
@@ -65,7 +65,7 @@
         </v-list>
         <v-card-actions v-else>
           <v-spacer />
-          <v-btn color="primary" @click="dialog = true">
+          <v-btn color="primary" depressed @click="dialog = true">
             <v-icon left>mdi-plus</v-icon>
             Create A New Project
           </v-btn>
@@ -78,24 +78,32 @@
       >
         <v-card>
           <v-card-title class="headline">
-            Create new project
+            {{id === null ? 'Create New' : 'Edit'}} Project
           </v-card-title>
           <v-card-text>
             <v-text-field
               label="Project Name"
               v-model="name"
               :hint="ref"
+              outlined
             />
             <v-textarea
               label="Project Description (optional)"
               v-model="desc"
+              outlined
             />
           </v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn text @click="reset">Cancel</v-btn>
-            <v-btn @click="newProject" color="primary" :disabled="!name.trim()">
-              {{this.id === null ? 'Create' : 'Save'}}
+            <v-btn
+              :disabled="!name.trim()"
+              :loading="loading"
+              color="primary"
+              depressed
+              @click="newProject"
+            >
+              {{id === null ? 'Create' : 'Save'}}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -113,6 +121,7 @@ export default {
   data() {
     return {
       dialog: false,
+      loading: false,
       name: '',
       desc: '',
       id: null,
@@ -123,7 +132,7 @@ export default {
     ...mapGetters('projects', { projectFind: 'find' }),
     currentProject() {
       const { Project } = this.$FeathersVuex.api;
-      return Project.findInStore({ query: { id: this.$store.getters.currentProject } }).data[0] || {};
+      return Project.findInStore({ query: { uuid: this.$store.getters.currentProject } }).data[0] || {};
     },
     projects() { return this.projectFind({ query: { $limit: 9999 } }).data; },
     ref() {
@@ -139,11 +148,11 @@ export default {
   },
   methods: {
     setCurrentProject(item) {
-      this.$store.commit('setCurrentProject', item.id);
+      this.$store.commit('setCurrentProject', item.uuid);
     },
     async removeProject(project) {
       const { File } = this.$FeathersVuex.api;
-      const files = await File.find({ query: { projectId: project.id } });
+      const files = await File.find({ query: { projectId: project.uuid } });
       await Promise.all(files.map((file) => file.remove()));
       project.remove();
     },
@@ -162,13 +171,14 @@ export default {
     async newProject() {
       if (!this.name.trim()) return;
       const { Project, File } = this.$FeathersVuex.api;
-      const project = new Project({
+      this.loading = true;
+      let project = new Project({
         name: this.name.trim(),
         desc: this.desc,
         ref: this.ref,
         ...(this.id ? { _id: this.id } : {}),
       });
-      await project.save();
+      project = await project.save();
       if (!this.id) {
         const file = new File({
           name: `${project.ref}.ino`,
@@ -176,12 +186,12 @@ export default {
           body: defaultCode,
           contentType: 'text/x-arduino',
           main: true,
-          projectId: project.id,
+          projectId: project.uuid,
         });
         await file.save();
         this.setCurrentProject(project);
       } else {
-        const files = await File.find({ query: { projectId: project.id } });
+        const files = await File.find({ query: { projectId: project.uuid } });
         await Promise.all(files.map(async (file) => {
           if (file.main) {
             // eslint-disable-next-line no-param-reassign
@@ -195,12 +205,9 @@ export default {
           file.save();
         }));
       }
+      this.loading = false;
       this.reset();
     },
-  },
-  mounted() {
-    const { Project } = this.$FeathersVuex.api;
-    Project.find({ query: { $limit: 9999 } });
   },
 };
 </script>

@@ -3,6 +3,7 @@ import Vue from 'vue';
 import BaseSerial from './base-serial';
 
 const { serial } = navigator;
+const asyncTimeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 console.log('using navserial');
 class NavSerial extends BaseSerial {
@@ -12,6 +13,7 @@ class NavSerial extends BaseSerial {
     this.devices = JSON.parse(localStorage.portNames || '[]');
     this._currentDevice = null;
     this._rl = false;
+    this._reader = null;
     this.implementation = 'navserial';
     this.handlesSelect = true;
   }
@@ -24,17 +26,16 @@ class NavSerial extends BaseSerial {
     return value;
   }
 
-  async _readLoop(id = Math.random()) {
-    if (this._rl && id !== this._rl) return;
+  async _readLoop(id) {
+    if (!this._rl || id !== this._rl) return;
     if (!this._currentDevice || !this._currentDevice.readable) {
       this._rl = false;
       return;
     }
-    this._rl = id;
     try {
       this._reader = this._currentDevice.readable.getReader();
       // eslint-disable-next-line no-constant-condition
-      while (true) {
+      while (id === this._rl) {
         // eslint-disable-next-line no-await-in-loop
         const { value, done } = await this._reader.read();
         if (done) {
@@ -50,6 +51,14 @@ class NavSerial extends BaseSerial {
     if (this._reader) this._reader.releaseLock();
     this._reader = null;
     setTimeout(() => this._readLoop(id), 10);
+  }
+
+  async stopReadLoop() {
+    this._rl = false;
+    if (this._reader) {
+      await asyncTimeout(100);
+      await this.stopReadLoop();
+    }
   }
 
   async requestDevice() {
@@ -70,7 +79,7 @@ class NavSerial extends BaseSerial {
 
   async setCurrentDevice(value) {
     if (!(await this.isDevice(value))) return;
-    if (this._currentDevice) this.disconnect();
+    if (this.connected) this.disconnect();
     this._currentDevice = await this._getDevice(value);
     Vue.set(this, 'currentDevice', value);
     this.emit('currentDevice', value);
@@ -103,7 +112,16 @@ class NavSerial extends BaseSerial {
   }
 
   async connect() {
-    if (!this._currentDevice || this._currentDevice.readable) return;
+    if (!this._currentDevice) {
+      console.log('skipping connect');
+      return;
+    }
+    if (this._currentDevice.readable) {
+      try {
+        await this.disconnect();
+      } catch (err) { console.error(err); }
+    }
+    // console.log(await this._currentDevice.getInfo());
     await this._currentDevice.open({
       baudrate: this.baud,
     });
@@ -111,22 +129,38 @@ class NavSerial extends BaseSerial {
     // console.log(1, this._currentDevice.getSignals());
     this.connected = true;
     this.emit('connected', this.currentDevice);
-    const self = this;
-    this._currentDevice.readable.pipeTo(new WritableStream({
-      write(chunk) {
-        // console.log('up', Buffer.from(chunk).toString(this.encoding));
-        if (!self.mute) self.emit('message', Buffer.from(chunk).toString(self.encoding));
-        self.emit('data', Buffer.from(chunk));
-      },
-    }));
-    // if (!this._rl) this._readLoop();
+    // const self = this;
+    // this._reader = new WritableStream({
+    //   start(controller) {
+    //     self._controller = controller;
+    //   },
+    //   write(chunk) {
+    //     // console.log('up', Buffer.from(chunk).toString(this.encoding));
+    //     if (!self.mute) self.emit('message', Buffer.from(chunk).toString(self.encoding));
+    //     self.emit('data', Buffer.from(chunk));
+    //   },
+    //   abort(err) {
+    //     console.log('Sink error:', err);
+    //   },
+    // });
+    // this._readableStreamClosed = this._currentDevice.readable.pipeTo(this._reader, { preventClose: true });
+    this._rl = Math.random();
+    this._readLoop(this._rl);
   }
 
   async disconnect() {
-    if (!this._currentDevice || !this._currentDevice.opened) return;
+    if (!this._currentDevice) return;
+    if (this._rl) await this.stopReadLoop();
+    await asyncTimeout(100);
     await this._currentDevice.close();
+    await asyncTimeout(100);
+    // if (this._reader) {
+    //   this._controller.error('FooBar');
+    //   await this._readableStreamClosed.catch(Math.random);
+    // }
     this.connected = false;
     this.emit('disconnect', this.currentDevice);
+    console.log('disconnected');
   }
 
   async setDeviceName(value, name) {

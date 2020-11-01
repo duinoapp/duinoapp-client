@@ -9,7 +9,7 @@ class File extends BaseModel {
   // Define default properties here
   static instanceDefaults(data) {
     return {
-      id: genId(`${data.projectId}:${data.ref}`, 'files'),
+      uuid: genId(`${data.projectId}:${data.ref}`, 'files'),
       name: '',
       ref: '',
       body: '',

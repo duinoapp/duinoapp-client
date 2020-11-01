@@ -1,6 +1,6 @@
 {
-  "name": "chromeduino_vue",
-  "short_name": "chromeduino_vue",
+  "name": "duino.app",
+  "short_name": "duino.app",
   "icons": [
     {
       "src": "./img/icons/android-chrome-192x192.png",

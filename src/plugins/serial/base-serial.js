@@ -16,7 +16,7 @@ class BaseSerial extends EventEmitter {
     super();
     this.requestRequired = false;
     this.mute = false;
-    this.baud = 115200;
+    this.baud = Number(window.localStorage.currentBaudRate) || 115200;
     this.lastBaud = 115200;
     this.encoding = 'ascii';
     this.devices = [];
@@ -44,14 +44,13 @@ class BaseSerial extends EventEmitter {
   async setCurrentDevice(value) { this.currentDevice = value; }
 
   async setBaud(baud) {
-    console.log(1);
     try {
       await this.disconnect();
-    } catch (err) { Math.random(); }
-    console.log(2);
+    } catch (err) { console.error(err); }
     this.lastBaud = this.baud;
     this.baud = baud;
     await this.connect();
+    window.localStorage.currentBaudRate = baud;
     return baud;
   }
 

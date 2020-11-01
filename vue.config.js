@@ -13,5 +13,5 @@ module.exports = {
     plugins: [
       new IgnoreNotFoundExportPlugin({ include: /FeathersVuexPagination/ }),
     ],
-  }
+  },
 };

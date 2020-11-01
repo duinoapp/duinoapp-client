@@ -27,7 +27,7 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item flat to="/tools/settings">
-          <v-list-item-icon><v-icon left>mdi-settings</v-icon></v-list-item-icon>
+          <v-list-item-icon><v-icon left>mdi-cogs</v-icon></v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title>Settings</v-list-item-title>
           </v-list-item-content>
@@ -41,7 +41,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main style="padding-left:256px">
+    <v-main style="padding-left:256px;">
       <router-view/>
     </v-main>
   </div>

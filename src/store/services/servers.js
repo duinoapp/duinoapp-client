@@ -9,7 +9,7 @@ class Server extends BaseModel {
   // Define default properties here
   static instanceDefaults(data) {
     return {
-      id: genId(data.address, 'servers'),
+      uuid: genId(data.address, 'servers'),
       name: '',
       address: '',
       location: '',

@@ -9,7 +9,7 @@ class Library extends BaseModel {
   // Define default properties here
   static instanceDefaults(data) {
     return {
-      id: genId(data.name, 'libraries'),
+      uuid: genId(data.name, 'libraries'),
       localPath: null,
       ...meta(),
     };

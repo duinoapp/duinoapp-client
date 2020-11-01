@@ -20,10 +20,10 @@ class CurrentStore {
 
   async currentProjectFile() {
     const { File, Project } = this.Vue.$FeathersVuex.api;
-    const [project] = (await Project.find({ query: { id: store.getters.currentProject } })).data;
+    const [project] = await Project.find({ query: { uuid: store.getters.currentProject } });
     if (!project) return;
-    const [file] = await File.find({ query: { projectId: project.id, main: true } });
-    if (file) store.commit('setCurrentFile', file.id);
+    const [file] = await File.find({ query: { projectId: project.uuid, main: true } });
+    if (file) store.commit('setCurrentFile', file.uuid);
   }
 }
 

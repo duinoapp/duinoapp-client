@@ -1,7 +1,7 @@
 # duino.app Vue Client
 ## aka Chromeduino 3.0
 
-# Notice: This is a work in progress and does not currently work.
+# Notice: This is a work in progress.
 
 ## Project setup
 ```

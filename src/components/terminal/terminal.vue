@@ -1,5 +1,5 @@
 <template>
-  <div :id="id" style="height: -webkit-fill-available;" />
+  <div :id="id" :style="{ height, width: '100%' }" />
 </template>
 
 <script>
@@ -8,6 +8,12 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 
 export default {
+  props: {
+    height: {
+      type: String,
+      default: '-webkit-fill-available',
+    },
+  },
   data() {
     return {
       id: `xterm-${Math.random()}`,
@@ -33,14 +39,16 @@ export default {
       this.$terminal.write(val.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n'));
     },
     clear() {
-      this.$terminal.selectAll();
-      this.$terminal.clearSelection();
+      this.$terminal.clear();
     },
     focus() {
       this.$terminal.focus();
     },
     blur() {
       this.$terminal.blur();
+    },
+    fit() {
+      this.$terminal.fit();
     },
   },
 };

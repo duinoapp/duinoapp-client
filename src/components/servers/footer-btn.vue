@@ -4,8 +4,8 @@
       <template v-slot:activator="{ on }">
         <v-btn text dense small to="/tools/servers" v-on="on">
           Server:
-          &nbsp;<ping-bubble :ping="currentServer.ping" />
-          &nbsp;<flag :iso="currentServer.country" />
+          <ping-bubble :ping="currentServer.ping" class="mx-1" />
+          <flag :iso="currentServer.country" />
         </v-btn>
       </template>
       <span>{{currentServer.name}}</span>
@@ -31,7 +31,7 @@ export default {
     ...mapGetters({ currentServerId: 'currentServer' }),
     currentServer() {
       const { Server } = this.$FeathersVuex.api;
-      return Server.findInStore({ query: { id: this.currentServerId } }).data[0] || {};
+      return Server.findInStore({ query: { uuid: this.currentServerId } }).data[0] || {};
     },
   },
 };

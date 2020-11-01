@@ -39,19 +39,19 @@
         <v-card-text>
           <p>
             Unfortunately, your browser does not support the features we need to upload
-            code to your device. Currently supported browsers include Google Chrome, Opera,
-            and the new Microsoft Edge browser.
+            code to your device. <!-- Currently supported browsers include Google Chrome, Opera,
+            and the new Microsoft Edge browser. --> Currently only Google Chrome is supported.
           </p>
           <p>
             We are always working to try to make this application available to everyone,
-            but unfortunately, this may take some time, so we ask you to please use supported
+            but unfortunately, this may take some time, so we ask you to please use a supported
             browser in the meantime.
           </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <!-- <v-btn text href="https://caniuse.com/#feat=webusb" target="_blank">Which Browser Can I Use?</v-btn> -->
-          <v-btn href="https://www.google.com/chrome/" color="primary">Get Chrome</v-btn>
+          <v-btn href="https://www.google.com/chrome/" color="primary" @click.ctrl.shift.prevent="noSerialDialog = false">Get Chrome</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -9,7 +9,7 @@ class Core extends BaseModel {
   // Define default properties here
   static instanceDefaults(data) {
     return {
-      id: genId(data.coreId, 'cores'),
+      uuid: genId(data.coreId, 'cores'),
       ...meta(),
     };
   }

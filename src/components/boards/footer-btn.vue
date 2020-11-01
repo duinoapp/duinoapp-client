@@ -23,7 +23,7 @@ export default {
   computed: {
     currentBoard() {
       const { Board } = this.$FeathersVuex.api;
-      return Board.findInStore({ query: { id: this.$store.getters.currentBoard } }).data[0];
+      return Board.findInStore({ query: { uuid: this.$store.getters.currentBoard } }).data[0];
     },
   },
 };

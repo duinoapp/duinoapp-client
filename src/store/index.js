@@ -20,34 +20,44 @@ const servicePlugins = requireModule
 const store = new Vuex.Store({
   state: {
     serialShelf: false,
+    donateMenu: false,
+    serialTab: 'program',
     currentServer: window.localStorage.currentServer || null,
-    currentBoard: window.localStorage.currentBoard || null,
+    currentBoard: window.localStorage.currentBoard || '51b2904f-b7fd-3df8-9330-0ef1b852b816',
     currentProject: window.localStorage.currentProject || null,
     currentFile: window.localStorage.currentFile || null,
   },
   mutations: {
-    toggleSerialStore(state) {
-      state.serialShelf = !state.serialShelf;
+    toggleSerialShelf(state, val) {
+      state.serialShelf = typeof val === 'boolean' ? val : !state.serialShelf;
     },
-    setCurrentServer(state, id) {
-      window.localStorage.currentServer = id;
-      state.currentServer = id;
+    toggleDonateMenu(state, val) {
+      state.donateMenu = typeof val === 'boolean' ? val : !state.donateMenu;
     },
-    setCurrentBoard(state, id) {
-      window.localStorage.currentBoard = id;
-      state.currentBoard = id;
+    setSerialTab(state, val) {
+      state.serialTab = val;
     },
-    setCurrentProject(state, id) {
-      window.localStorage.currentProject = id;
-      state.currentProject = id;
+    setCurrentServer(state, uuid) {
+      window.localStorage.currentServer = uuid;
+      state.currentServer = uuid;
     },
-    setCurrentFile(state, id) {
-      window.localStorage.currentFile = id;
-      state.currentSFile = id;
+    setCurrentBoard(state, uuid) {
+      window.localStorage.currentBoard = uuid;
+      state.currentBoard = uuid;
+    },
+    setCurrentProject(state, uuid) {
+      window.localStorage.currentProject = uuid;
+      state.currentProject = uuid;
+    },
+    setCurrentFile(state, uuid) {
+      window.localStorage.currentFile = uuid;
+      state.currentFile = uuid;
     },
   },
   getters: {
     serialShelf(state) { return state.serialShelf; },
+    donateMenu(state) { return state.donateMenu; },
+    serialTab(state) { return state.serialTab; },
     currentServer(state) { return state.currentServer; },
     currentBoard(state) { return state.currentBoard; },
     currentProject(state) { return state.currentProject; },

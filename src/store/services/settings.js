@@ -1,6 +1,6 @@
 import feathersClient, { makeServicePlugin, BaseModel } from '../feathers-client';
 // eslint-disable-next-line import/named
-import { genId, meta } from '../tools';
+import { genId, meta, settingsDefaults } from '../tools';
 
 class Setting extends BaseModel {
   // Required for $FeathersVuex plugin to work after production transpile.
@@ -9,11 +9,22 @@ class Setting extends BaseModel {
   // Define default properties here
   static instanceDefaults(data) {
     return {
-      id: genId(data.key, 'settings'),
-      key: '',
+      uuid: genId(data.key, 'settings'),
+      key: data.key,
       value: null,
       ...meta(),
     };
+  }
+
+  static setupInstance(inst) {
+    if (settingsDefaults[inst.key]) {
+      // eslint-disable-next-line no-param-reassign
+      inst.value = {
+        ...settingsDefaults[inst.key],
+        ...(inst.value || {}),
+      };
+    }
+    return inst;
   }
 }
 const servicePath = 'settings';

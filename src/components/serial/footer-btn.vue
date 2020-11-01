@@ -1,8 +1,8 @@
 <template>
   <v-menu top v-model="menu" offset-y>
     <!-- eslint-disable-next-line vue/no-unused-vars -->
-    <template v-slot:activator="{ on }">
-      <v-btn text dense small @click="activate" v-if="currentDevice">
+    <template #activator="{ on }">
+      <v-btn text dense small @click="activate(on)" v-if="currentDevice">
         Serial: {{deviceName}}
       </v-btn>
       <v-btn text dense small @click="activate" v-else>Select Device Port</v-btn>
@@ -37,6 +37,7 @@ export default {
       menu: false,
       devices: [],
       currentDevice: (this.$serial && this.$serial.currentDevice) || null,
+      deviceCB: null,
     };
   },
   computed: {
@@ -54,7 +55,11 @@ export default {
   },
   mounted() {
     this.currentDevice = this.$serial.currentDevice || null;
-    this.$serial.on('currentDevice', (value) => { this.currentDevice = value; });
+    this.deviceCB = (value) => { this.currentDevice = value; };
+    this.$serial.on('currentDevice', this.deviceCB);
+  },
+  beforeDestroy() {
+    if (this.deviceCB) this.$serial.off('currentDevice', this.deviceCB);
   },
   methods: {
     activate() {

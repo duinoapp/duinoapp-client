@@ -43,7 +43,7 @@ export default {
   },
   computed: {
     currentProject() {
-      return this.$store.getters['projects/find']({ query: { id: this.$store.getters.currentProject } }).data[0];
+      return this.$store.getters['projects/find']({ query: { uuid: this.$store.getters.currentProject } }).data[0];
     },
   },
 };

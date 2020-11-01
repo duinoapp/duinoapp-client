@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <div>
-      <v-app-bar app dense clipped-left :clipped-right="serialShelf.value" elevation="2">
+      <v-app-bar app dense clipped-left elevation="2">
         <v-btn text to="/" active-class="foobar">
           <v-img
             :src="require('./assets/logo.svg')"
@@ -15,28 +15,29 @@
         <v-btn text dense to="/tools"><v-icon left>mdi-wrench</v-icon>Tools</v-btn>
         <v-btn text dense to="/tools/about"><v-icon left>mdi-information</v-icon>About</v-btn>
         <v-spacer/>
-        <compile-btn />
-        <upload-btn />
-        <v-btn text dense @click="toggleSerialShelf"><v-icon left>mdi-console</v-icon>Serial</v-btn>
+        <compile-btn bottom />
+        <upload-btn bottom />
+        <v-btn text dense @click="toggleSerialShelf">
+          <v-icon left>mdi-console</v-icon>Serial
+        </v-btn>
       </v-app-bar>
     </div>
 
     <router-view />
 
     <v-navigation-drawer
-      v-model="serialShelf.value"
+      :value="$store.getters.serialShelf"
       mobile-breakpoint="9999999"
       style="bottom: 40px"
       class="elevation-0"
       app
       absolue
       bottom
+      @input="toggleSerialShelf($event)"
     >
       <v-row align="center">
         <v-col cols="auto" class="pa-0">
-          <v-tabs
-            v-model="tab"
-          >
+          <v-tabs :value="$store.getters.serialTab" @change="setSerialTab">
             <v-tab href="#program">Program</v-tab>
             <v-tab href="#monitor">Monitor</v-tab>
             <v-tab href="#plotter">Plot</v-tab>
@@ -44,19 +45,19 @@
         </v-col>
         <v-spacer />
         <v-col cols="auto" class="py-0 mr-6">
-          <compile-btn />
-          <upload-btn />
+          <compile-btn top />
+          <upload-btn top />
           <v-btn icon @click="toggleSerialShelf">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-col>
       </v-row>
-      <v-tabs-items v-model="tab">
-        <v-tab-item value="program">
-          <compile-console />
+      <v-tabs-items :value="$store.getters.serialTab" @change="setSerialTab">
+        <v-tab-item value="program" eager>
+          <compile-console height="calc(50vh - 73px)"/>
         </v-tab-item>
         <v-tab-item value="monitor">
-          <serial-monitor />
+          <serial-monitor height="calc(50vh - 96px)"/>
         </v-tab-item>
         <v-tab-item value="plotter">
           graph coming soon
@@ -71,6 +72,7 @@
         <serial-footer v-if="serialReady" />
         <board-footer />
         <server-footer />
+        <coffee top />
       </v-row>
     </v-footer>
     <serial-prompts />
@@ -78,6 +80,7 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex';
 import BoardFooter from './components/boards/footer-btn.vue';
 import ServerFooter from './components/servers/footer-btn.vue';
 import SerialFooter from './components/serial/footer-btn.vue';
@@ -86,6 +89,7 @@ import SerialMonitor from './components/serial/monitor.vue';
 import CompileBtn from './components/program/compile.vue';
 import UploadBtn from './components/program/upload.vue';
 import CompileConsole from './components/program/console.vue';
+import Coffee from './components/coffee.vue';
 
 export default {
   name: 'App',
@@ -98,47 +102,27 @@ export default {
     CompileBtn,
     CompileConsole,
     UploadBtn,
+    Coffee,
   },
   data() {
     return {
       serialReady: false,
-      serialShelf: {},
       tab: 'program',
     };
   },
   methods: {
+    ...mapMutations(['toggleSerialShelf', 'setSerialTab']),
     checkSerialReady() {
       if (this.$serial) this.serialReady = true;
       else setTimeout(() => this.checkSerialReady(), 100);
     },
-    async loadSerialShelfSetting() {
-      const { Setting } = this.$FeathersVuex.api;
-      const settings = await Setting.find({ query: { key: 'serial.shelf' } });
-      let setting;
-      if (!settings.length) {
-        setting = new Setting({
-          key: 'serial.shelf',
-          value: false,
-        });
-        await setting.save();
-      } else {
-        setting = settings.shift();
-        settings.forEach((set) => set.remove()); // remove any duplicates
-      }
-      this.serialShelf = setting;
-    },
-    async toggleSerialShelf() {
-      this.serialShelf.value = !this.serialShelf.value;
-      // this.$set(this.serialShelf, 'value', !this.serialShelf.value);
-      this.serialShelf.save();
-    },
   },
   mounted() {
     console.log(this.$FeathersVuex);
-    this.loadSerialShelfSetting();
     this.checkSerialReady();
     this.$FeathersVuex.api.File.find();
     this.$FeathersVuex.api.Project.find();
+    this.$FeathersVuex.api.Setting.find();
   },
 };
 </script>
