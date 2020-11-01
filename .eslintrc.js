@@ -8,7 +8,7 @@ module.exports = {
     '@vue/airbnb',
   ],
   plugins: [
-    'vuetify'
+    'vuetify',
   ],
   rules: {
     'max-len': [
@@ -17,10 +17,10 @@ module.exports = {
         ignoreUrls: true,
         ignoreComments: true,
         ignoreRegExpLiterals: true,
-        code: 128
-      }
+        code: 128,
+      },
     ],
-    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-underscore-dangle': 'off',
     'vuetify/no-deprecated-classes': 'warn',

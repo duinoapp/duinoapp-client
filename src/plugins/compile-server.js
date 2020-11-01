@@ -149,7 +149,6 @@ class CompileServer extends EventEmitter {
       } else {
         const b = new Board(board);
         await b.save();
-        console.log(b);
       }
       return boardId;
     }));

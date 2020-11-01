@@ -114,6 +114,7 @@ export class SerialPort extends EventEmitter {
           };
 
           if (!has(cmds, msg.op)) {
+            // eslint-disable-next-line no-console
             console.log('unknown op');
           }
 

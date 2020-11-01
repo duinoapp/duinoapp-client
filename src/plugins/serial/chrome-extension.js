@@ -2,6 +2,7 @@ import { promisify } from 'util';
 import { SerialPort, list } from './lib/chrome-serial';
 import BaseSerial from './base-serial';
 
+// eslint-disable-next-line no-console
 console.log('using chrome extension');
 class ExtensionSerial extends BaseSerial {
   constructor() {
@@ -41,6 +42,7 @@ class ExtensionSerial extends BaseSerial {
       if (err.message === 'Access denied.') {
         this.emit('errorPrompt', 'access_denied');
       }
+      // eslint-disable-next-line no-console
       console.error([err]);
     }
   }
@@ -71,7 +73,7 @@ class ExtensionSerial extends BaseSerial {
 
   async writeBuff(buff) {
     if (!this._port) throw new Error('Cannot write to closed port.');
-    console.log('down', Buffer.from(buff).toString('hex'));
+    // console.log('down', Buffer.from(buff).toString('hex'));
     await this._port.write({ data: Buffer.from(buff).toString('base64') });
     // await this._port.flush();
     // setTimeout(() => this._port.flush(), 10);
@@ -85,7 +87,7 @@ class ExtensionSerial extends BaseSerial {
   connect() {
     return new Promise((resolve, reject) => {
       if (!this.currentDevice || this._port) {
-        console.log('connect', this.currentDevice, this._port);
+        // console.log('connect', this.currentDevice, this._port);
         resolve();
         return;
       }
@@ -99,7 +101,7 @@ class ExtensionSerial extends BaseSerial {
             reject(err);
           }
           this._port.on('data', (buff) => {
-            console.log('up', buff, buff.toString('hex'));
+            // console.log('up', buff, buff.toString('hex'));
             this.emit('data', buff);
             if (!this.mute) this.emit('message', buff.toString(this.encoding));
           });
