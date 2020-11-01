@@ -118,7 +118,6 @@ export default {
     },
   },
   mounted() {
-    console.log(this.$FeathersVuex);
     this.checkSerialReady();
     this.$FeathersVuex.api.File.find();
     this.$FeathersVuex.api.Project.find();

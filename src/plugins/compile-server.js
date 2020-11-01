@@ -44,7 +44,6 @@ class CompileServer extends EventEmitter {
         // eslint-disable-next-line no-param-reassign
         server[i] = serverData[i];
       });
-      console.log(server);
       await server.patch();
       if (server.uuid && server.uuid === store.getters.currentServer) {
         this.setServer(server);
@@ -71,7 +70,6 @@ class CompileServer extends EventEmitter {
         if (pings.length < sampleSize) return socket.emit('p', pingCB);
         if (pings.length > sampleSize) return Math.random();
         socket.disconnect();
-        console.log(pings);
         if (stats.stdev(pings) > 200) return this.pingServer(url, timeout).then(resolve);
         return resolve({ ...serverData, ping: stats.mean(pings) });
       };
@@ -89,6 +87,7 @@ class CompileServer extends EventEmitter {
     this.url = serverConfig.address;
     this.server = serverConfig;
     // window.localStorage.existingAddress = this.url;
+    // eslint-disable-next-line no-console
     console.log(`loading server: ${this.url}`);
     this.load();
   }
@@ -111,9 +110,9 @@ class CompileServer extends EventEmitter {
     //   (await Library.find()).map(lib => !libraries.some(l => l.uuid === lib.uuid) && lib.remove()),
     // );
 
-    console.log('saving cores', cores);
+    // console.log('saving cores', cores);
     const existingCores = (await Core.find()).reverse();
-    console.log('saving cores', existingCores.length);
+    // console.log('saving cores', existingCores.length);
     const coreIds = await Promise.all(cores.map(
       async (core) => {
         const coreId = genId(core.id, 'cores');
@@ -123,9 +122,9 @@ class CompileServer extends EventEmitter {
         return coreId;
       },
     ));
-    console.log('saving boards', boards);
+    // console.log('saving boards', boards);
     const existingBoards = (await Board.find()).reverse();
-    console.log('saving boards', existingBoards.length);
+    // console.log('saving boards', existingBoards.length);
     const boardIds = await Promise.all(boards.map(async (board) => {
       const boardId = genId(board.fqbn, 'boards');
       const existing = existingBoards.find((eboard) => eboard.uuid === boardId);
@@ -154,8 +153,8 @@ class CompileServer extends EventEmitter {
       }
       return boardId;
     }));
-    console.log('saving libs');
-    const start = Date.now();
+    // console.log('saving libs');
+    // const start = Date.now();
     // const existingLibs = (await Library.find()).reverse();
     // console.log('saving libs', existingLibs.length);
     // const libIds = await chunk(libraries, 10)
@@ -173,7 +172,7 @@ class CompileServer extends EventEmitter {
     //     resolve([...b, ...c]);
     //   }), 50);
     // }), Promise.resolve([]));
-    console.log('finished loading server details', Date.now() - start);
+    // console.log('finished loading server details', Date.now() - start);
     await Promise.all(
       (await Core.find({ query: { uuid: { $nin: coreIds } } })).map((core) => core.remove()),
     );
@@ -183,7 +182,7 @@ class CompileServer extends EventEmitter {
     // await Promise.all(
     //   (await Library.find({ query: { uuid: { $nin: libIds } } })).map(lib => lib.remove()),
     // );
-    console.log('cleaned old fields');
+    // console.log('cleaned old fields');
   }
 
   connect(silent = false) {

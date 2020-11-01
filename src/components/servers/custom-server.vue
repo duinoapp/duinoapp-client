@@ -60,11 +60,11 @@ export default {
       try {
         this.serverData = await this.$compiler.pingServer(this.url.trim(), 5000);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
         this.err = 'Invalid server address.';
       }
       if (this.serverData && this.serverData.ping <= 0) {
-        console.log(this.serverData);
         this.err = 'Unable to connect to the server.';
       }
     },

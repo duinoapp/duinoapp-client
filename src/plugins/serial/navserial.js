@@ -5,6 +5,7 @@ import BaseSerial from './base-serial';
 const { serial } = navigator;
 const asyncTimeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// eslint-disable-next-line no-console
 console.log('using navserial');
 class NavSerial extends BaseSerial {
   constructor() {
@@ -89,6 +90,7 @@ class NavSerial extends BaseSerial {
       if (err.message === 'Access denied.') {
         this.emit('errorPrompt', 'access_denied');
       }
+      // eslint-disable-next-line no-console
       console.error([err]);
     }
   }
@@ -113,12 +115,13 @@ class NavSerial extends BaseSerial {
 
   async connect() {
     if (!this._currentDevice) {
-      console.log('skipping connect');
+      // console.log('skipping connect');
       return;
     }
     if (this._currentDevice.readable) {
       try {
         await this.disconnect();
+        // eslint-disable-next-line no-console
       } catch (err) { console.error(err); }
     }
     // console.log(await this._currentDevice.getInfo());
@@ -160,6 +163,7 @@ class NavSerial extends BaseSerial {
     // }
     this.connected = false;
     this.emit('disconnect', this.currentDevice);
+    // eslint-disable-next-line no-console
     console.log('disconnected');
   }
 

@@ -46,6 +46,7 @@ class BaseSerial extends EventEmitter {
   async setBaud(baud) {
     try {
       await this.disconnect();
+      // eslint-disable-next-line no-console
     } catch (err) { console.error(err); }
     this.lastBaud = this.baud;
     this.baud = baud;
