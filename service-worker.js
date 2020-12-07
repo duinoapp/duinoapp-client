@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.1f29ad40f0129d0c8ba57d37a5ba15e6.js"
+  "/precache-manifest.7d680c3439678678e02e8b203cb899f3.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "duinoapp-client"});
