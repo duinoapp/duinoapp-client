@@ -48,9 +48,13 @@ class BaseSerial extends EventEmitter {
       await this.disconnect();
       // eslint-disable-next-line no-console
     } catch (err) { console.error(err); }
+    // eslint-disable-next-line no-console
+    // console.log('disconnected');
     this.lastBaud = this.baud;
     this.baud = baud;
     await this.connect();
+    // eslint-disable-next-line no-console
+    // console.log('connected');
     window.localStorage.currentBaudRate = baud;
     return baud;
   }
@@ -62,8 +66,22 @@ class BaseSerial extends EventEmitter {
   async setMute(val) { this.mute = val; }
 
   _transSignal(sig) {
-    if (sig === 'on' || sig === true) return { dtr: true, rts: true };
-    if (sig === 'off' || sig === false) return { dtr: false, rts: false };
+    if (sig === 'on' || sig === true) {
+      return {
+        dtr: true,
+        rts: true,
+        dataTerminalReady: true,
+        requestToSend: true,
+      };
+    }
+    if (sig === 'off' || sig === false) {
+      return {
+        dtr: false,
+        rts: false,
+        dataTerminalReady: false,
+        requestToSend: false,
+      };
+    }
     return sig;
   }
 

@@ -270,7 +270,11 @@ class CompileServer extends EventEmitter {
     await this.compile(false);
     this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
     const id = Math.random().toString(16).substr(2);
+    // eslint-disable-next-line no-console
+    // console.log(this.Vue.$serial.baud, speed);
     if (speedDiff) await this.Vue.$serial.setBaud(speed);
+    // eslint-disable-next-line no-console
+    // console.log(this.Vue.$serial.baud, speed);
     this.Vue.$serial.setMute(true);
 
     const dataUp = (buff) => this.socket.emit(`upload.dataUp.${id}`, buff);

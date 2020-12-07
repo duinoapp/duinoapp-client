@@ -43,6 +43,8 @@ class NavSerial extends BaseSerial {
           this._reader.releaseLock();
           break;
         }
+        // eslint-disable-next-line no-console
+        // console.log('read', Buffer.from(value).toString('hex'));
         this.emit('data', Buffer.from(value));
         if (!this.mute) this.emit('message', Buffer.from(value).toString(this.encoding));
       }
@@ -57,6 +59,7 @@ class NavSerial extends BaseSerial {
   async stopReadLoop() {
     this._rl = false;
     if (this._reader) {
+      this._reader.cancel();
       await asyncTimeout(100);
       await this.stopReadLoop();
     }
@@ -104,6 +107,9 @@ class NavSerial extends BaseSerial {
     //   await writer.ready;
     //   await writer.write(chunk);
     // }));
+    // eslint-disable-next-line no-console
+    // console.log('write', Buffer.from(buff).toString('hex'));
+    // await writer.write(Buffer.from(buff).toString('hex') === '1b0100010e0114' ? Buffer.from('01', 'hex') : buff);
     await writer.write(buff);
     await writer.releaseLock();
   }
@@ -127,6 +133,7 @@ class NavSerial extends BaseSerial {
     // console.log(await this._currentDevice.getInfo());
     await this._currentDevice.open({
       baudrate: this.baud,
+      baudRate: this.baud,
     });
     // console.log(1, this._currentDevice);
     // console.log(1, this._currentDevice.getSignals());
@@ -176,7 +183,8 @@ class NavSerial extends BaseSerial {
 
   setSignals(signals) {
     if (!this._currentDevice) throw new Error('Cannot write to closed port.');
-    return this._currentDevice.setSignals(this._transSignal(signals));
+    const sigs = this._transSignal(signals);
+    return this._currentDevice.setSignals(sigs);
   }
 }
 
