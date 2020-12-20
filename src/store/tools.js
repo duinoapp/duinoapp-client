@@ -34,5 +34,8 @@ export const settingsDefaults = {
   editor: {
     autoSaveInterval: 10,
     theme: 'vs',
+    fontSize: 14,
+    wordWrap: 'off',
+    scrollBeyondLastLine: true,
   },
 };

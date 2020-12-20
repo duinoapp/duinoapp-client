@@ -1,38 +1,27 @@
 <template>
-  <MonacoEditor
-    ref="editor"
-    class="editor"
+  <ide
+    class="code-editor"
     :value="code"
-    :theme="settings.theme"
-    language="c"
-    v-resize="resize"
-    @change="updateCode($event)"
-    @editorDidMount="editorMount"
-    @editorWillMount="monacoMount"
+    :language="language"
+    @input="updateCode($event)"
   />
 </template>
 
 <script>
-import MonacoEditor from 'vue-monaco';
 import get from 'lodash/get';
 import set from 'lodash/set';
+import Ide from '../ide.vue';
 
 export default {
   components: {
-    MonacoEditor,
+    Ide,
   },
   data() {
     return {
-      monaco: null,
       autoSaveTimeout: null,
     };
   },
   computed: {
-    currentFile() {
-      const { File } = this.$FeathersVuex.api;
-      return File.findInStore({ query: { uuid: this.$store.getters.currentFile } }).data[0] || {};
-    },
-    code() { return get(this.currentFile, 'editor.body') || get(this.currentFile, 'body') || ''; },
     settings() {
       const { Setting } = this.$FeathersVuex.api;
       const { data } = Setting.findInStore({ query: { key: 'editor' } });
@@ -41,28 +30,38 @@ export default {
       settings.save();
       return settings.value;
     },
+    currentFile() {
+      const { File } = this.$FeathersVuex.api;
+      return File.findInStore({ query: { uuid: this.$store.getters.currentFile } }).data[0] || {};
+    },
+    code() { return get(this.currentFile, 'editor.body') || get(this.currentFile, 'body') || ''; },
+    language() {
+      switch (get(this.currentFile, 'contentType', 'text/plain')) {
+        case 'text/x-arduino':
+        case 'text/x-c':
+          return 'cpp';
+        default:
+          return '';
+      }
+    },
   },
   methods: {
     updateCode(code) {
       set(this.currentFile, 'editor.body', code);
       this.currentFile.save();
     },
-    resize() {
-      this.$refs.editor.getEditor().layout();
-    },
-    save() {
-      if (!this.currentFile?.editor?.body) return;
-      set(this.currentFile, 'body', get(this.currentFile, 'editor.body'));
-      set(this.currentFile, 'editor.body', null);
-      this.currentFile.save();
-    },
-    monacoMount(monaco) { this.monaco = monaco; },
-    editorMount(editor) {
-      // eslint-disable-next-line no-bitwise
-      editor.addCommand(this.monaco.KeyMod.CtrlCmd | this.monaco.KeyCode.KEY_S, () => this.save());
+    save(overrideFile) {
+      const { File } = this.$FeathersVuex.api;
+      const file = overrideFile || File.findInStore({ query: { uuid: this.$store.getters.currentFile } }).data[0] || {};
+      if (typeof file?.editor?.body !== 'string') return;
+      set(file, 'body', get(file, 'editor.body'));
+      set(file, 'editor.body', null);
+      file.save();
     },
     autoSave() {
-      if (this.settings.autoSaveInterval) this.save();
+      const { File } = this.$FeathersVuex.api;
+      const files = File.findInStore({ query: { projectId: this.$store.getters.currentProject } }).data;
+      if (this.settings.autoSaveInterval) files.forEach((file) => this.save(file));
       this.autoSaveTimeout = setTimeout(() => this.autoSave(), (this.settings.autoSaveInterval || 10) * 1000);
     },
   },
@@ -76,7 +75,7 @@ export default {
 </script>
 
 <style>
-.editor {
+.code-editor {
   width: 100%;
   height: calc(100vh - 88px);
 }

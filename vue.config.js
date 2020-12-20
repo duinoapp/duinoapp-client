@@ -1,4 +1,5 @@
 const IgnoreNotFoundExportPlugin = require('ignore-not-found-export-webpack-plugin');
+const MonacoEditorPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = {
   chainWebpack: (config) => {
@@ -12,6 +13,10 @@ module.exports = {
   configureWebpack: {
     plugins: [
       new IgnoreNotFoundExportPlugin({ include: /FeathersVuexPagination/ }),
+      new MonacoEditorPlugin({
+        // https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+        languages: ['cpp'],
+      }),
     ],
   },
 };

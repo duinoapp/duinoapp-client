@@ -117,11 +117,16 @@ export default {
       else setTimeout(() => this.checkSerialReady(), 100);
     },
   },
-  mounted() {
+  async mounted() {
     this.checkSerialReady();
     this.$FeathersVuex.api.File.find();
     this.$FeathersVuex.api.Project.find();
-    this.$FeathersVuex.api.Setting.find();
+    await this.$FeathersVuex.api.Setting.find();
+    const { Setting } = this.$FeathersVuex.api;
+    const { data } = Setting.findInStore({ query: { key: 'editor' } });
+    // eslint-disable-next-line no-console
+    console.log(data[0]);
+    this.$vuetify.theme.dark = /(dark)|(black)/.test(data[0]?.value?.theme ?? '');
   },
 };
 </script>

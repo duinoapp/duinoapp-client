@@ -3,8 +3,9 @@
     v-model="tree"
     :open="open"
     :items="items"
-    activatable
     item-key="name"
+    item-text="text"
+    activatable
     open-on-click
     dense
     return-object
@@ -42,6 +43,9 @@ export default {
       png: 'mdi-file-image',
       txt: 'mdi-file-document-outline',
       ino: 'mdi-file-code-outline',
+      h: 'mdi-file-code-outline',
+      c: 'mdi-file-code-outline',
+      cpp: 'mdi-file-code-outline',
       xls: 'mdi-file-excel',
     },
     tree: [],
@@ -65,8 +69,10 @@ export default {
       }).data;
       const filesObject = files.reduce((a, file) => set(a, file.name.replace(/\./g, '').replace(/\//g, '.'), file), {});
       const processObject = (obj) => Object.keys(obj).reduce((a, i) => {
-        if (!obj[i]._id) return [...a, { name: i, children: processObject(obj[i]) }];
-        return [...a, obj[i]];
+        if (!obj[i]._id) return [...a, { name: i, text: i, children: processObject(obj[i]) }];
+        // eslint-disable-next-line no-param-reassign
+        obj[i].text = obj[i].name.split('/').pop();
+        return obj[i].text === '.gitkeep' ? a : [...a, obj[i]];
       }, []);
       const filesArray = processObject(filesObject);
       return filesArray;
