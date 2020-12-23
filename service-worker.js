@@ -28,7 +28,7 @@ self.addEventListener('activate', (event) => {
   }
 });
 
-workbox.skipWaiting();
+workbox.core.skipWaiting();
 workbox.clientsClaim();
 
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
