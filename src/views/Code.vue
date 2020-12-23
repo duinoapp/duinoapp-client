@@ -45,6 +45,9 @@
       </v-menu>
       <v-divider />
       <files-tree />
+      <template #append>
+        <project-sync-tools :project="currentProject" />
+      </template>
     </v-navigation-drawer>
     <v-main style="padding-left:256px">
       <files-editor v-if="currentProject" />
@@ -61,6 +64,7 @@ import FilesAddFile from '../components/files/add-file.vue';
 import FilesAddFolder from '../components/files/add-folder.vue';
 import RecentList from '../components/recent-list.vue';
 import ProjectManager from '../components/projects/manager.vue';
+import ProjectSyncTools from '../components/projects/sync-tools.vue';
 
 export default {
   components: {
@@ -70,6 +74,7 @@ export default {
     FilesAddFolder,
     RecentList,
     ProjectManager,
+    ProjectSyncTools,
   },
   computed: {
     currentProject() {

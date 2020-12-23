@@ -28,7 +28,7 @@
           <v-col cols="12" sm="3">
             <v-select
               v-model="ext"
-              :items="['.c', '.cpp', '.h', '.txt']"
+              :items="['.c', '.cpp', '.h', '.ino', '.md', '.txt']"
               label="Type"
               outlined
             />
@@ -90,6 +90,20 @@ export default {
       const foldersArray = [{ text: `${this.project.ref}/`, value: '' }, ...processObject(filesObject, `${this.project.ref}/`)];
       return foldersArray;
     },
+    fileType() {
+      switch (this.ext) {
+        case '.ino':
+          return 'text/x-arduino';
+        case '.c':
+        case '.cpp':
+        case '.h':
+          return 'text/x-c';
+        case '.md':
+          return 'text/markdown';
+        default:
+          return 'text/plain';
+      }
+    },
   },
   methods: {
     async add() {
@@ -99,7 +113,7 @@ export default {
         name: `${this.location}${this.name}${this.ext}`,
         ref: `${this.project.ref}/${this.location}${this.name}${this.ext}`,
         body: '',
-        contentType: this.ext === '.txt' ? 'text/plain' : 'text/x-c',
+        contentType: this.fileType,
         main: false,
         projectId: this.project.uuid,
       });

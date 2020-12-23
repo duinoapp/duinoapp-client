@@ -4,7 +4,6 @@
     :open="open"
     :items="items"
     item-key="name"
-    item-text="text"
     activatable
     open-on-click
     dense
@@ -12,7 +11,7 @@
     :active.sync="active"
     @update:active="updateActive($event[0])"
   >
-    <template v-slot:prepend="{ item, open }">
+    <template #prepend="{ item, open }">
       <v-icon v-if="item.children">
         {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
       </v-icon>
@@ -20,8 +19,18 @@
         {{ files[item.name.split('.').pop()] || files.txt }}
       </v-icon>
     </template>
-    <template v-slot:append="{ item }">
+    <template #append="{ item }">
       <v-icon v-if="get(item, 'editor.body')">mdi-circle-medium</v-icon>
+    </template>
+    <template #label="{ item }">
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <span v-on="on">
+            {{ item.name.split('/').pop() }}
+          </span>
+        </template>
+        <span>{{ item.name.split('/').pop() }}</span>
+      </v-tooltip>
     </template>
   </v-treeview>
 </template>
@@ -38,7 +47,7 @@ export default {
       html: 'mdi-language-html5',
       js: 'mdi-nodejs',
       json: 'mdi-json',
-      md: 'mdi-markdown',
+      md: 'mdi-language-markdown-outline',
       pdf: 'mdi-file-pdf',
       png: 'mdi-file-image',
       txt: 'mdi-file-document-outline',
@@ -69,10 +78,9 @@ export default {
       }).data;
       const filesObject = files.reduce((a, file) => set(a, file.name.replace(/\./g, '').replace(/\//g, '.'), file), {});
       const processObject = (obj) => Object.keys(obj).reduce((a, i) => {
-        if (!obj[i]._id) return [...a, { name: i, text: i, children: processObject(obj[i]) }];
-        // eslint-disable-next-line no-param-reassign
-        obj[i].text = obj[i].name.split('/').pop();
-        return obj[i].text === '.gitkeep' ? a : [...a, obj[i]];
+        if (!obj[i]._id) return [...a, { name: i, children: processObject(obj[i]) }];
+        const text = obj[i].name.split('/').pop();
+        return text === '.gitkeep' ? a : [...a, obj[i]];
       }, []);
       const filesArray = processObject(filesObject);
       return filesArray;

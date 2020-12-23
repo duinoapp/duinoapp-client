@@ -15,7 +15,7 @@ module.exports = {
       new IgnoreNotFoundExportPlugin({ include: /FeathersVuexPagination/ }),
       new MonacoEditorPlugin({
         // https://github.com/Microsoft/monaco-editor-webpack-plugin#options
-        languages: ['cpp'],
+        languages: ['cpp', 'markdown'],
       }),
     ],
   },

@@ -40,6 +40,8 @@ export default {
         case 'text/x-arduino':
         case 'text/x-c':
           return 'cpp';
+        case 'text/markdown':
+          return 'markdown';
         default:
           return '';
       }
