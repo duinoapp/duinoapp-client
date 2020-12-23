@@ -61,6 +61,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    path: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
@@ -124,14 +128,25 @@ export default {
     },
   },
   mounted() {
-    if (this.project.ref) this.location = '';
+    if (this.project.ref) this.location = this.path.replace(`${this.project.ref}/`, '');
   },
   watch: {
     'project.ref': {
       handler(to, from) {
         if (!to || to === from) return;
-        this.location = '';
+        this.location = this.path.replace(`${this.project.ref}/`, '');
+        if (!this.items.some((item) => item.value === this.location)) this.location = '';
       },
+    },
+    path(to, from) {
+      if (!to || to === from) return;
+      this.location = this.path.replace(`${this.project.ref}/`, '');
+      if (!this.items.some((item) => item.value === this.location)) this.location = '';
+    },
+    dialog(to, from) {
+      if (to === from) return;
+      if (to) this.$emit('open');
+      else this.$emit('close');
     },
   },
 };
