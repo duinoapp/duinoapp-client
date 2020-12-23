@@ -48,7 +48,7 @@ export default {
     };
     this.$compiler.on('console.clear', this.clearCB);
     setTimeout(() => {
-      this.$refs.term.write('Press the compile/program button above to begin.');
+      this.$refs.term.write('Press the compile/program button above to begin.\n\r');
     }, 500);
   },
 

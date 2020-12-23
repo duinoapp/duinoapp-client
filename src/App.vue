@@ -117,11 +117,16 @@ export default {
       else setTimeout(() => this.checkSerialReady(), 100);
     },
   },
-  mounted() {
+  async mounted() {
     this.checkSerialReady();
-    this.$FeathersVuex.api.File.find();
-    this.$FeathersVuex.api.Project.find();
-    this.$FeathersVuex.api.Setting.find();
+    this.$FeathersVuex.api.File.find({ query: { $limit: 9999999 } });
+    this.$FeathersVuex.api.Project.find({ query: { $limit: 9999999 } });
+    await this.$FeathersVuex.api.Setting.find({ query: { $limit: 9999999 } });
+    const { Setting } = this.$FeathersVuex.api;
+    const { data } = Setting.findInStore({ query: { key: 'editor' } });
+    // eslint-disable-next-line no-console
+    console.log(data[0]);
+    this.$vuetify.theme.dark = /(dark)|(black)/.test(data[0]?.value?.theme ?? '');
   },
 };
 </script>

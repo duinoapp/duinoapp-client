@@ -56,8 +56,8 @@
               :hover="!currentServer || currentServer.uuid !== item.uuid"
               :color="
                 currentServer && currentServer.uuid === item.uuid
-                ? '#CFC'
-                : (hoverId === item.uuid ? '#EEE' : undefined)
+                ? '#00FF0030'
+                : (hoverId === item.uuid ? '#CCCCCC30' : undefined)
               "
               outlined
               flat

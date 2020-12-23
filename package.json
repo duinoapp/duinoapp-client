@@ -1,13 +1,14 @@
 {
   "name": "duinoapp-client",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "author": "Fraser Bullock",
   "license": "GPL-3.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "version": "node bust-cache.js && git add package.json service-worker.js"
   },
   "dependencies": {
     "@feathersjs/feathers": "^4.5.8",
@@ -18,8 +19,11 @@
     "debounce-promise": "^3.1.2",
     "feathers-localstorage": "^5.1.1",
     "feathers-vuex": "^3.12.3",
+    "fflate": "^0.4.4",
+    "file-saver": "^2.0.5",
     "intel-hex": "^0.1.2",
     "lodash": "^4.17.15",
+    "monaco-editor-webpack-plugin": "<=1.8.2",
     "register-service-worker": "^1.7.1",
     "roboto-fontface": "*",
     "sass": "^1.26.7",
