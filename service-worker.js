@@ -29,7 +29,7 @@ self.addEventListener('activate', (event) => {
 });
 
 workbox.core.skipWaiting();
-workbox.clientsClaim();
+workbox.core.clientsClaim();
 
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
