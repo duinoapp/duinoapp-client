@@ -34,6 +34,5 @@ workbox.core.skipWaiting();
 workbox.core.clientsClaim();
 
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
-workbox.core.precaching.suppressWarnings();
-workbox.core.precaching.precacheAndRoute(self.__precacheManifest, {});
+workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
