@@ -7,7 +7,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "version": "node bust-cache.js && git add package.json service-worker.js"
   },
   "dependencies": {
     "@feathersjs/feathers": "^4.5.8",

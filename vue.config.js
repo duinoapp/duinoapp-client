@@ -1,5 +1,6 @@
 const IgnoreNotFoundExportPlugin = require('ignore-not-found-export-webpack-plugin');
 const MonacoEditorPlugin = require('monaco-editor-webpack-plugin');
+const manifestJSON = require('./public/manifest.json');
 
 module.exports = {
   chainWebpack: (config) => {
@@ -18,5 +19,16 @@ module.exports = {
         languages: ['cpp', 'markdown'],
       }),
     ],
+  },
+  pwa: {
+    themeColor: manifestJSON.theme_color,
+    name: manifestJSON.short_name,
+    msTileColor: manifestJSON.background_color,
+    appleMobileWebAppCapable: 'yes',
+    appleMobileWebAppStatusBarStyle: 'black',
+    workboxPluginMode: 'InjectManifest',
+    workboxOptions: {
+      swSrc: 'service-worker.js',
+    },
   },
 };
