@@ -43,7 +43,11 @@
       close-on-click
     >
       <v-list class="py-0" dense>
-        <files-add-file :project="currentProject" :path="menuItem.ref.replace(/[^/]+$/, '')" @open="isMenu = false">
+        <files-add-file
+          :project="currentProject"
+          :path="menuItem.ref && menuItem.ref.replace(/[^/]+$/, '')"
+          @open="isMenu = false"
+        >
           <template #activator="{ on }">
             <v-list-item v-on="on">
                 <v-list-item-title>
@@ -53,7 +57,11 @@
             </v-list-item>
           </template>
         </files-add-file>
-        <files-add-folder :project="currentProject" :path="menuItem.ref.replace(/[^/]+$/, '')" @open="isMenu = false">
+        <files-add-folder
+          :project="currentProject"
+          :path="menuItem.ref && menuItem.ref.replace(/[^/]+$/, '')"
+          @open="isMenu = false"
+        >
           <template #activator="{ on }">
             <v-list-item v-on="on">
                 <v-list-item-title>

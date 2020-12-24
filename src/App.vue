@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <div>
-      <v-app-bar app dense clipped-left elevation="2">
+      <v-app-bar app dense clipped-left elevation="2" class="main-toolbar">
         <v-btn text to="/" active-class="foobar">
           <v-img
             :src="require('./assets/logo.svg')"
@@ -11,9 +11,18 @@
             width="2em"
           />
         </v-btn>
-        <v-btn text dense to="/code"><v-icon left>mdi-code-braces</v-icon>Code</v-btn>
-        <v-btn text dense to="/tools"><v-icon left>mdi-wrench</v-icon>Tools</v-btn>
-        <v-btn text dense to="/tools/about"><v-icon left>mdi-information</v-icon>About</v-btn>
+        <v-btn text dense to="/code" class="mx-1">
+          <v-icon left>mdi-code-braces</v-icon>
+          Code
+        </v-btn>
+        <v-btn text dense to="/tools" class="mx-1">
+          <v-icon left>mdi-wrench</v-icon>
+          Tools
+        </v-btn>
+        <v-btn text dense to="/tools/about" class="mx-1">
+          <v-icon left>mdi-information</v-icon>
+          About
+        </v-btn>
         <v-spacer/>
         <compile-btn bottom />
         <upload-btn bottom />
@@ -37,7 +46,7 @@
     >
       <v-row align="center">
         <v-col cols="auto" class="pa-0">
-          <v-tabs :value="$store.getters.serialTab" @change="setSerialTab">
+          <v-tabs class="shelf-tabs" :value="$store.getters.serialTab" @change="setSerialTab">
             <v-tab href="#program">Program</v-tab>
             <v-tab href="#monitor">Monitor</v-tab>
             <v-tab href="#plotter">Plot</v-tab>
@@ -67,7 +76,15 @@
 
     <v-footer dense app style="z-index: 10">
       <v-row>
-        <div>Duino App &copy; {{ new Date().getFullYear() }}</div>
+        <div style="line-height: 28px;">
+          Duino.App &copy; {{ new Date().getFullYear() }}
+        </div>
+        <div class="ml-2">
+          <v-btn href="https://github.com/duinoapp/duinoapp-client/issues" target="_blank" rel="noopener noreferrer" text small>
+            <v-icon small left>mdi-bug-outline</v-icon>
+            Issues
+          </v-btn>
+        </div>
         <v-spacer/>
         <serial-footer v-if="serialReady" />
         <board-footer />
@@ -133,4 +150,8 @@ export default {
 
 <style lang="scss">
 @import '../node_modules/xterm/css/xterm.css';
+
+.shelf-tabs > .v-tabs-bar {
+  background-color: transparent !important;
+}
 </style>
