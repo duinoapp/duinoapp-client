@@ -1,9 +1,9 @@
 <template>
-  <v-row v-show="!!project.uuid" class="px-3">
+  <v-row class="px-3">
     <v-col cols="auto">
       <v-tooltip top>
         <template #activator="{ on }">
-          <v-btn icon :loading="exportLoading" v-on="on" @click="exportProject">
+          <v-btn v-show="!!project.uuid" icon :loading="exportLoading" v-on="on" @click="exportProject">
             <v-icon>mdi mdi-folder-download-outline</v-icon>
           </v-btn>
         </template>

@@ -185,6 +185,7 @@ export default {
     showMenu(e, item) {
       e.preventDefault();
       if (!item && e.target.id !== 'tree-wrap') return;
+      if (!this.currentProject.uuid) return;
       this.menuItem = item || { ref: `${this.currentProject.ref}/`, root: true };
       this.isMenu = false;
       this.menuX = e.clientX;
