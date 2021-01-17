@@ -38,4 +38,7 @@ export const settingsDefaults = {
     wordWrap: 'off',
     scrollBeyondLastLine: true,
   },
+  compiler: {
+    verbose: false,
+  },
 };

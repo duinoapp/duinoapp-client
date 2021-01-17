@@ -59,6 +59,7 @@
                 ? '#00FF0030'
                 : (hoverId === item.uuid ? '#CCCCCC30' : undefined)
               "
+              height="100%"
               outlined
               flat
               @mouseenter="hoverId = item.uuid"

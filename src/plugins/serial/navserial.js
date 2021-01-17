@@ -15,6 +15,7 @@ class NavSerial extends BaseSerial {
     this._currentDevice = null;
     this._rl = false;
     this._reader = null;
+    this._beforeWriteFn = null;
     this.implementation = 'navserial';
     this.handlesSelect = true;
   }
@@ -99,6 +100,11 @@ class NavSerial extends BaseSerial {
   }
 
   async writeBuff(buff) {
+    if (this._beforeWriteFn) {
+      const beforeWriteFn = this._beforeWriteFn;
+      this._beforeWriteFn = null;
+      await beforeWriteFn();
+    }
     const writer = this._currentDevice.writable.getWriter();
     // console.log(buff);
     // const encoder = new TextEncoder();
@@ -109,7 +115,6 @@ class NavSerial extends BaseSerial {
     // }));
     // eslint-disable-next-line no-console
     // console.log('write', Buffer.from(buff).toString('hex'));
-    // await writer.write(Buffer.from(buff).toString('hex') === '1b0100010e0114' ? Buffer.from('01', 'hex') : buff);
     await writer.write(buff);
     await writer.releaseLock();
   }
