@@ -308,7 +308,7 @@ class CompileServer extends EventEmitter {
         await this.Vue.$serial.setSignals('off');
         await asyncTimeout(protocol === 'arduino' ? 250 : 50);
         await this.Vue.$serial.setSignals('on');
-        await asyncTimeout(100);
+        await asyncTimeout(protocol === 'arduino' ? 250 : 100);
       };
     }
 

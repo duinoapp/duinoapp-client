@@ -4,6 +4,7 @@ import BaseSerial from './base-serial';
 
 const { serial } = navigator;
 const asyncTimeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const DEBUG = false;
 
 // eslint-disable-next-line no-console
 console.log('using navserial');
@@ -16,6 +17,7 @@ class NavSerial extends BaseSerial {
     this._rl = false;
     this._reader = null;
     this._beforeWriteFn = null;
+    this._writeLock = false;
     this.implementation = 'navserial';
     this.handlesSelect = true;
   }
@@ -45,12 +47,15 @@ class NavSerial extends BaseSerial {
           break;
         }
         // eslint-disable-next-line no-console
-        // console.log('read', Buffer.from(value).toString('hex'));
-        this.emit('data', Buffer.from(value));
-        if (!this.mute) this.emit('message', Buffer.from(value).toString(this.encoding));
+        if (DEBUG) console.log('read', Buffer.from(value).toString('hex'));
+        try {
+          this.emit('data', Buffer.from(value));
+          if (!this.mute) this.emit('message', Buffer.from(value).toString(this.encoding));
+          // eslint-disable-next-line no-console
+        } catch (e) { console.error(e); }
       }
     } catch (e) {
-      this.emit('message', `<ERROR: ${e.message}>`);
+      this.emit('message', `<ERROR: ${e.message}>\r\n`);
     }
     if (this._reader) this._reader.releaseLock();
     this._reader = null;
@@ -100,10 +105,17 @@ class NavSerial extends BaseSerial {
   }
 
   async writeBuff(buff) {
+    if (this._writeLock) {
+      // eslint-disable-next-line no-console
+      if (DEBUG) console.log('locked', Buffer.from(buff).toString('hex'));
+      return;
+    }
     if (this._beforeWriteFn) {
       const beforeWriteFn = this._beforeWriteFn;
       this._beforeWriteFn = null;
+      this._writeLock = true;
       await beforeWriteFn();
+      this._writeLock = false;
     }
     const writer = this._currentDevice.writable.getWriter();
     // console.log(buff);
@@ -114,7 +126,7 @@ class NavSerial extends BaseSerial {
     //   await writer.write(chunk);
     // }));
     // eslint-disable-next-line no-console
-    // console.log('write', Buffer.from(buff).toString('hex'));
+    if (DEBUG) console.log('write', Buffer.from(buff).toString('hex'));
     await writer.write(buff);
     await writer.releaseLock();
   }
@@ -188,6 +200,8 @@ class NavSerial extends BaseSerial {
 
   setSignals(signals) {
     if (!this._currentDevice) throw new Error('Cannot write to closed port.');
+    // eslint-disable-next-line no-console
+    if (DEBUG) console.log('signaling', signals);
     const sigs = this._transSignal(signals);
     return this._currentDevice.setSignals(sigs);
   }

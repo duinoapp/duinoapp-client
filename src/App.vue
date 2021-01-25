@@ -69,7 +69,7 @@
           <serial-monitor height="calc(50vh - 96px)"/>
         </v-tab-item>
         <v-tab-item value="plotter">
-          graph coming soon
+          <serial-plotter height="calc(50vh - 96px)"/>
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -103,6 +103,7 @@ import ServerFooter from './components/servers/footer-btn.vue';
 import SerialFooter from './components/serial/footer-btn.vue';
 import SerialPrompts from './components/serial/prompts.vue';
 import SerialMonitor from './components/serial/monitor.vue';
+import SerialPlotter from './components/serial/plotter.vue';
 import CompileBtn from './components/program/compile.vue';
 import UploadBtn from './components/program/upload.vue';
 import CompileConsole from './components/program/console.vue';
@@ -116,6 +117,7 @@ export default {
     SerialPrompts,
     SerialFooter,
     SerialMonitor,
+    SerialPlotter,
     CompileBtn,
     CompileConsole,
     UploadBtn,
