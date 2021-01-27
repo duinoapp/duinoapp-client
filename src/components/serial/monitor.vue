@@ -51,8 +51,8 @@ export default {
     this.$serial.on('clear', this.clearCB);
   },
   beforeDestroy() {
-    if (this.logCB) this.$serial.on('message', this.logCB);
-    if (this.clearCB) this.$serial.on('clear', this.clearCB);
+    if (this.logCB) this.$serial.off('message', this.logCB);
+    if (this.clearCB) this.$serial.off('clear', this.clearCB);
   },
 };
 </script>

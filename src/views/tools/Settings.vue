@@ -9,15 +9,20 @@
     <v-col cols="12">
       <editor />
     </v-col>
+    <v-col cols="12">
+      <compiler />
+    </v-col>
   </v-row>
 </template>
 
 <script>
 import Editor from '../../components/settings/editor.vue';
+import Compiler from '../../components/settings/compiler.vue';
 
 export default {
   components: {
     Editor,
+    Compiler,
   },
 };
 </script>

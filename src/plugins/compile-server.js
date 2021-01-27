@@ -221,6 +221,14 @@ class CompileServer extends EventEmitter {
   }
 
   // eslint-disable-next-line class-methods-use-this
+  _getFlags() {
+    const [settings] = store.getters['settings/find']({ query: { key: 'compiler' } }).data;
+    return {
+      verbose: settings?.value?.verbose || false,
+    };
+  }
+
+  // eslint-disable-next-line class-methods-use-this
   _getUploadSpeed() {
     const board = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data[0];
     const speed = get(board, 'props.upload.speed', 115200);
@@ -241,7 +249,12 @@ class CompileServer extends EventEmitter {
     const files = store.getters['files/find']({ query: { projectId: project.uuid } }).data
       .map((f) => ({ content: f.body, name: `${project.ref}/${f.name}` }));
     this.emit('console.progress', { percent: 0.25 * mod, message: 'Compiling code...' });
-    const res = await this.socket.emitAsync('compile.start', { fqbn: this._getFqbn(), files, noHex: !close });
+    const res = await this.socket.emitAsync('compile.start', {
+      fqbn: this._getFqbn(),
+      files,
+      noHex: !close,
+      flags: this._getFlags(),
+    });
     if (res.error) {
       this.emit('console.error', res.error);
       throw new Error(res.error);
@@ -264,6 +277,8 @@ class CompileServer extends EventEmitter {
       });
       return;
     }
+    const [board] = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data;
+    const { protocol } = board?.props?.upload;
     const speed = this._getUploadSpeed();
     const speedDiff = this.Vue.$serial.baud !== speed;
     // const hex = await this.compile(false);
@@ -286,12 +301,23 @@ class CompileServer extends EventEmitter {
     const files = store.getters['files/find']({ query: { projectId: project.uuid } }).data
       .map((f) => ({ content: f.body, name: `${project.ref}/${f.name}` }));
 
-    await this.Vue.$serial.setSignals('off');
-    await asyncTimeout(100);
-    await this.Vue.$serial.setSignals('on');
-    await asyncTimeout(200);
+    if (['arduino', 'wiring'].includes(protocol)) {
+      this.Vue.$serial._beforeWriteFn = async () => {
+        // eslint-disable-next-line no-console
+        // console.log('before write', protocol);
+        await this.Vue.$serial.setSignals('off');
+        await asyncTimeout(protocol === 'arduino' ? 250 : 50);
+        await this.Vue.$serial.setSignals('on');
+        await asyncTimeout(protocol === 'arduino' ? 250 : 100);
+      };
+    }
 
-    const err = await this.socket.emitAsync('upload.start', { id, fqbn: this._getFqbn(), files });
+    const err = await this.socket.emitAsync('upload.start', {
+      id,
+      fqbn: this._getFqbn(),
+      files,
+      flags: this._getFlags(),
+    });
     await this.Vue.$serial.setSignals('off');
 
     if (err) {
