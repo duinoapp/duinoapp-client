@@ -13,6 +13,7 @@ class CompileServer extends EventEmitter {
     super();
     this.url = null;
     this.socket = null;
+    this.initialising = true;
     store.subscribe((mutation) => {
       if (mutation.type === 'setCurrentServer') {
         this.setServer(store.getters['servers/find']({ query: { uuid: store.getters.currentServer } }).data[0]);
@@ -53,6 +54,13 @@ class CompileServer extends EventEmitter {
       const [server] = Server.findInStore({ query: { ping: { $gt: 0 }, $sort: { ping: 1 }, $limit: 1 } }).data;
       if (server) store.commit('setCurrentServer', server.uuid);
     }
+    this.initialising = false;
+  }
+
+  async waitInit(count = 0) {
+    if (!this.initialising || count > 40) return;
+    await asyncTimeout(500);
+    await this.waitInit(count + 1);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -182,6 +190,22 @@ class CompileServer extends EventEmitter {
     //   (await Library.find({ query: { uuid: { $nin: libIds } } })).map(lib => lib.remove()),
     // );
     // console.log('cleaned old fields');
+  }
+
+  async librariesSearch(search, limit = 10, skip = 0, sortBy = 'name', sortDesc = false) {
+    await this.waitInit();
+    if (!this.server) {
+      return {
+        limit, skip, total: 0, data: [],
+      };
+    }
+    const connected = !!this.socket;
+    if (!connected) await this.connect();
+    const res = await this.socket.emitAsync('info.librariesSearch', {
+      search, limit, skip, sortBy, sortDesc,
+    });
+    if (!connected) this.disconnect();
+    return res;
   }
 
   connect(silent = false) {
