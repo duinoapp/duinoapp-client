@@ -8,6 +8,7 @@
           dense
           hide-details
           append-outer-icon="mdi-send"
+          autocomplete="off"
           @click:append-outer="send"
           @keydown.enter="send"
         />
