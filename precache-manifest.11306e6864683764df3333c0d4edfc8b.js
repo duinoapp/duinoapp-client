@@ -1,14 +1,14 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "4cd408ab0acf58487758",
+    "revision": "86f0379db30cb93e4ea3",
     "url": "/css/app.94ae514f.css"
   },
   {
-    "revision": "113a9f4c5e061e594124",
-    "url": "/css/chunk-vendors.ea4a81d0.css"
+    "revision": "d27dd35188324e77b2b2",
+    "url": "/css/chunk-vendors.b97b6f98.css"
   },
   {
-    "revision": "0b0317a1ea5de0394a44",
+    "revision": "2aac7cef946179cce34e",
     "url": "/css/code.4aa9c20b.css"
   },
   {
@@ -28,8 +28,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/css/servers.eeadbd24.css"
   },
   {
-    "revision": "17098ceedb06f405c3f7",
-    "url": "/css/settings.9eb1f7e4.css"
+    "revision": "f00e9c23154579d7d0b9",
+    "url": "/css/settings.0760589a.css"
   },
   {
     "revision": "ce044e15969a9c9a307e9c9fd01265b5",
@@ -2204,16 +2204,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/img/zw.58e2cbd6.svg"
   },
   {
-    "revision": "58ae9fe8aab54902e61f5510edca18b6",
+    "revision": "556020772cff1edff532faae287643d5",
     "url": "/index.html"
   },
   {
-    "revision": "64c90ae3f720b4ef43a6",
-    "url": "/js/about.950ea0e4.js"
+    "revision": "d9c7f813c37604a79a56",
+    "url": "/js/about.4e416521.js"
   },
   {
-    "revision": "4cd408ab0acf58487758",
-    "url": "/js/app.7d4b0cfd.js"
+    "revision": "86f0379db30cb93e4ea3",
+    "url": "/js/app.42a5dc4c.js"
   },
   {
     "revision": "8232829f8b96db1f6d9a",
@@ -2480,12 +2480,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/chunk-e13e4362.ed68ea6f.js"
   },
   {
-    "revision": "113a9f4c5e061e594124",
-    "url": "/js/chunk-vendors.5438731a.js"
+    "revision": "d27dd35188324e77b2b2",
+    "url": "/js/chunk-vendors.684baadf.js"
   },
   {
-    "revision": "0b0317a1ea5de0394a44",
-    "url": "/js/code.be2137f4.js"
+    "revision": "2aac7cef946179cce34e",
+    "url": "/js/code.0a25a23f.js"
   },
   {
     "revision": "872946f7d9e2ef09deab",
@@ -2516,8 +2516,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/servers.fa9c6e18.js"
   },
   {
-    "revision": "17098ceedb06f405c3f7",
-    "url": "/js/settings.461788ee.js"
+    "revision": "f00e9c23154579d7d0b9",
+    "url": "/js/settings.2032f896.js"
   },
   {
     "revision": "62515be3cd4fbac421a04209d7d564a0",
