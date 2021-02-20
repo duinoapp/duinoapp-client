@@ -71,6 +71,23 @@
             </v-list-item>
           </template>
         </files-add-folder>
+        <files-add-file
+          v-if="!menuItem.main && menuItem._id"
+          :key="menuItem.ref"
+          :project="currentProject"
+          :path="menuItem.ref && menuItem.ref.replace(/[^/]+$/, '')"
+          :file="menuItem"
+          @open="isMenu = false"
+        >
+          <template #activator="{ on }">
+            <v-list-item v-on="on">
+                <v-list-item-title>
+                  <v-icon left>mdi-cursor-text</v-icon>
+                  Rename/Move
+                </v-list-item-title>
+            </v-list-item>
+          </template>
+        </files-add-file>
         <v-dialog v-model="removeDialog" max-width="300">
           <template #activator="{ on }">
             <v-list-item v-show="!menuItem.main && !menuItem.root" v-on="on">

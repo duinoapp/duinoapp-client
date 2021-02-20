@@ -1,7 +1,36 @@
 <template>
   <div>
     <terminal ref="term" :height="height" />
-    <v-row class="px-4">
+    <v-row class="px-4" align="center">
+      <v-col class="py-0">
+        <v-text-field
+          v-model="text"
+          dense
+          hide-details
+          append-outer-icon="mdi-send"
+          @click:append-outer="send"
+          @keydown.enter="send"
+        />
+      </v-col>
+      <v-col cols="auto" class="py-0">
+        <v-checkbox
+          v-model="newline"
+          hide-details
+          class="mt-0"
+        >
+          <template #label>
+            <div>
+              NL
+              <v-tooltip top>
+                <template #activator="{ on }">
+                  <v-icon small class="ml-1 mb-1" v-on="on">mdi-information-outline</v-icon>
+                </template>
+                <span>Append a new line character (\n) to the end before sending</span>
+              </v-tooltip>
+            </div>
+          </template>
+        </v-checkbox>
+      </v-col>
       <v-col cols="2" class="py-0">
         <rate />
       </v-col>
@@ -36,9 +65,18 @@ export default {
   },
   data() {
     return {
+      newline: `${window.localStorage.newline}` === 'true',
+      text: '',
       logCB: null,
       clearCB: null,
     };
+  },
+  methods: {
+    send() {
+      if (!this.text || !this.$serial.connected) return;
+      this.$serial.write(`${this.text}${this.newline ? '\n' : ''}`);
+      this.text = '';
+    },
   },
   mounted() {
     this.logCB = (data) => {
@@ -53,6 +91,11 @@ export default {
   beforeDestroy() {
     if (this.logCB) this.$serial.off('message', this.logCB);
     if (this.clearCB) this.$serial.off('clear', this.clearCB);
+  },
+  watch: {
+    newline(to) {
+      window.localStorage.newline = to;
+    },
   },
 };
 </script>

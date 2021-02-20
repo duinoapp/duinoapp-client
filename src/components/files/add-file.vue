@@ -5,7 +5,7 @@
     </template>
     <v-card>
       <v-card-title>
-        Add File
+        {{file ? 'Update' : 'Add'}} File
       </v-card-title>
       <v-card-text>
         <v-row>
@@ -44,7 +44,7 @@
           Cancel
         </v-btn>
         <v-btn :disabled="!name || !!nameError" depressed color="primary" @click="add">
-          Add File
+          {{file ? 'Update' : 'Add'}} File
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -60,6 +60,10 @@ export default {
     project: {
       type: Object,
       default: () => ({}),
+    },
+    file: {
+      type: [Object, null],
+      default: () => null,
     },
     path: {
       type: String,
@@ -113,24 +117,47 @@ export default {
     async add() {
       if (!this.name || this.nameError) return;
       const { File } = this.$FeathersVuex.api;
-      const file = new File({
-        name: `${this.location}${this.name}${this.ext}`,
-        ref: `${this.project.ref}/${this.location}${this.name}${this.ext}`,
-        body: '',
-        contentType: this.fileType,
-        main: false,
-        projectId: this.project.uuid,
-      });
+      let file;
+      if (this.file) {
+        this.$set(this.file, 'contentType', this.fileType);
+        this.$set(this.file, 'name', `${this.location}${this.name}${this.ext}`);
+        this.$set(this.file, 'ref', `${this.project.ref}/${this.location}${this.name}${this.ext}`);
+        file = this.file;
+      } else {
+        file = new File({
+          name: `${this.location}${this.name}${this.ext}`,
+          ref: `${this.project.ref}/${this.location}${this.name}${this.ext}`,
+          body: '',
+          contentType: this.fileType,
+          main: false,
+          projectId: this.project.uuid,
+        });
+      }
       await file.save();
       this.$store.commit('setCurrentFile', file.uuid);
       this.name = '';
       this.dialog = false;
     },
+    loadFile() {
+      if (!this.file) return;
+      const folders = this.file.name.split('/');
+      const fileName = folders.pop();
+      const fileParts = fileName.split('.');
+      this.ext = `.${fileParts.pop()}`;
+      this.name = fileParts.join('.');
+      this.location = folders.length ? `${folders.join('/')}/` : '';
+    },
   },
   mounted() {
     if (this.project.ref) this.location = this.path.replace(`${this.project.ref}/`, '');
+    this.loadFile();
   },
   watch: {
+    'file.ref': {
+      handler() {
+        this.loadFile();
+      },
+    },
     'project.ref': {
       handler(to, from) {
         if (!to || to === from) return;
