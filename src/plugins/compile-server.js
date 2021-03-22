@@ -7,6 +7,7 @@ import store from '../store';
 import { genId } from '../store/tools';
 
 const asyncTimeout = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
+const forceLocal = new Set([]);
 
 class CompileServer extends EventEmitter {
   constructor() {
@@ -249,6 +250,7 @@ class CompileServer extends EventEmitter {
     const [settings] = store.getters['settings/find']({ query: { key: 'compiler' } }).data;
     return {
       verbose: settings?.value?.verbose || false,
+      preferLocal: settings?.value?.preferLocal || false,
     };
   }
 
@@ -262,8 +264,7 @@ class CompileServer extends EventEmitter {
     return speed;
   }
 
-  async compile(close = true) {
-    const mod = close ? 2 : 1;
+  async compile(close = true, mod = close ? 2 : 1, logErr = true) {
     this.emit('console.clear');
     this.emit('console.progress', { percent: 0 * mod, message: 'Connecting to compile server...' });
     await this.connect();
@@ -280,15 +281,16 @@ class CompileServer extends EventEmitter {
       flags: this._getFlags(),
     });
     if (res.error) {
-      this.emit('console.error', res.error);
+      if (logErr) this.emit('console.error', res.error);
       throw new Error(res.error);
     }
     if (close) {
       this.emit('console.progress', { percent: 1, message: 'Done!' });
       this.disconnect();
-    } else {
-      this.emit('console.progress', { percent: 0.5 * mod, message: 'Compiling completed!' });
+      return res.hex;
     }
+    this.emit('console.progress', { percent: 0.5 * mod, message: 'Compiling completed!' });
+    return null;
     // this.disconnect();
     // return res.hex;
   }
@@ -301,11 +303,25 @@ class CompileServer extends EventEmitter {
       });
       return;
     }
+    const flags = this._getFlags();
     const [board] = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data;
     const { protocol } = board?.props?.upload;
     const speed = this._getUploadSpeed();
     const speedDiff = this.Vue.$serial.baud !== speed;
-    // const hex = await this.compile(false);
+    if ((flags.preferLocal || forceLocal.has(protocol)) && this.Vue.$uploader.isSupported(board)) {
+      try {
+        const hex = await this.compile(true, 1, false);
+        this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
+        await this.Vue.$uploader.upload(hex, { ...flags, speed });
+        this.emit('console.progress', { percent: 1.0, message: 'Done!' });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(err);
+        this.emit('console.error', err);
+        this.emit('console.progress', { percent: 1.0, message: 'Error!' });
+      }
+      return;
+    }
     await this.compile(false);
     this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
     const id = Math.random().toString(16).substr(2);
@@ -340,7 +356,7 @@ class CompileServer extends EventEmitter {
       id,
       fqbn: this._getFqbn(),
       files,
-      flags: this._getFlags(),
+      flags,
     });
     await this.Vue.$serial.setSignals('off');
 

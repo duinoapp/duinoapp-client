@@ -11,6 +11,16 @@ this.emit('connected', value)
 this.emit('disconnected', value)
 this.emit('deviceNamePrompt', value) // prompts the user to input a readable device name
 */
+
+const signalMap = {
+  dtr: 'dataTerminalReady',
+  rts: 'requestToSend',
+  brk: 'break',
+  cts: 'clearToSend',
+  dsr: 'dataSetReady',
+  dcd: 'dataCarrierDetect',
+};
+
 class BaseSerial extends EventEmitter {
   constructor() {
     super();
@@ -23,6 +33,7 @@ class BaseSerial extends EventEmitter {
     this.currentDevice = null;
     this.connected = false;
     this.implementation = 'basic';
+    this.isDataStreamPaused = false;
   }
 
   install(Vue) {
@@ -66,28 +77,32 @@ class BaseSerial extends EventEmitter {
   async setMute(val) { this.mute = val; }
 
   _transSignal(sig) {
+    let trans = {};
+    if (typeof sig === 'object') {
+      trans = { ...sig };
+    }
     if (sig === 'on' || sig === true) {
-      return {
+      trans = {
         dtr: true,
         rts: true,
-        dataTerminalReady: true,
-        requestToSend: true,
       };
     }
     if (sig === 'off' || sig === false) {
-      return {
+      trans = {
         dtr: false,
         rts: false,
-        dataTerminalReady: false,
-        requestToSend: false,
       };
     }
-    return sig;
+    Object.keys(signalMap).forEach((i) => {
+      if (typeof trans[i] === 'boolean') trans[signalMap[i]] = trans[i];
+      if (typeof trans[signalMap[i]] === 'boolean') trans[i] = trans[signalMap[i]];
+    });
+    return trans;
   }
 
   async setSignals(signals) { return signals; }
 
-  async write(message) { return message; }
+  readBuff() { return null; }
 
   async writeBuff(buff) { return buff; }
 
@@ -101,6 +116,102 @@ class BaseSerial extends EventEmitter {
 
   async getDeviceName(value) {
     return (this.devices.find((d) => d.value === value) || { name: '' }).name;
+  }
+
+  // node-serialport properties
+  get isOpen() { return this.connected; }
+
+  get path() { return this.implementation; }
+
+  get baudRate() { return this.baud; }
+
+  async open(cb = () => {}) {
+    try {
+      await this.connect();
+    } catch (err) {
+      cb?.(err);
+      return;
+    }
+    cb?.();
+  }
+
+  async update(opts = {}, cb = () => {}) {
+    try {
+      if (opts.baudRate) {
+        await this.setBaud(opts.baudRate);
+      }
+    } catch (err) {
+      cb?.(err);
+      return;
+    }
+    cb?.();
+  }
+
+  async close(cb = () => {}) {
+    try {
+      await this.disconnect();
+    } catch (err) {
+      cb?.(err);
+      return;
+    }
+    cb?.();
+  }
+
+  async set(opts = {}, cb = () => {}) {
+    try {
+      await this.setSignals(opts);
+    } catch (err) {
+      cb?.(err);
+      return;
+    }
+    cb?.();
+  }
+
+  async get(cb = () => {}) {
+    let sigs = {};
+    try {
+      sigs = await this.getSignals();
+    } catch (err) {
+      cb?.(err, null);
+      return;
+    }
+    cb?.(null, sigs);
+  }
+
+  read(size) {
+    const buff = this.readBuff();
+    return buff && buff.slice(0, Math.min(buff.length, size || Infinity));
+  }
+
+  drain(cb = () => {}) { cb?.(); }
+
+  flush(cb = () => {}) { cb?.(); }
+
+  pause() {
+    this.isDataStreamPaused = true;
+    return this;
+  }
+
+  resume() {
+    this.isDataStreamPaused = true;
+    return this;
+  }
+
+  async write(message, encoding = null, cb = () => {}) {
+    if (typeof encoding === 'function') {
+      // eslint-disable-next-line no-param-reassign
+      cb = encoding;
+      // eslint-disable-next-line no-param-reassign
+      encoding = null;
+    }
+    if (this.mute && typeof message === 'string') return;
+    try {
+      await this.writeBuff(typeof message === 'string' ? Buffer.from(message, encoding || this.encoding) : message);
+    } catch (err) {
+      cb?.(err);
+      return;
+    }
+    cb?.();
   }
 }
 

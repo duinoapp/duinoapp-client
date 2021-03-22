@@ -4,7 +4,7 @@ import BaseSerial from './base-serial';
 
 const { serial } = navigator;
 const asyncTimeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const DEBUG = false;
+const DEBUG = true;
 
 // eslint-disable-next-line no-console
 console.log('using navserial');
@@ -18,8 +18,10 @@ class NavSerial extends BaseSerial {
     this._reader = null;
     this._beforeWriteFn = null;
     this._writeLock = false;
+    this._lastRead = null;
     this.implementation = 'navserial';
     this.handlesSelect = true;
+    this._initSerial();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -42,20 +44,28 @@ class NavSerial extends BaseSerial {
       while (id === this._rl) {
         // eslint-disable-next-line no-await-in-loop
         const { value, done } = await this._reader.read();
+
+        const buff = Buffer.from(this._lastRead && this.isDataStreamPaused ? (this._lastRead || []) : []);
+        this._lastRead = Buffer.concat([buff, Buffer.from([...value])]);
+
         if (done) {
           this._reader.releaseLock();
           break;
         }
         // eslint-disable-next-line no-console
-        if (DEBUG) console.log('read', Buffer.from(value).toString('hex'));
+        if (DEBUG) console.log('read', Buffer.from([...value]).toString('hex'));
         try {
-          this.emit('data', Buffer.from(value));
-          if (!this.mute) this.emit('message', Buffer.from(value).toString(this.encoding));
+          if (!this.isDataStreamPaused) {
+            this.emit('data', Buffer.from([...value]));
+            if (!this.mute) this.emit('message', Buffer.from([...value]).toString(this.encoding));
+          }
           // eslint-disable-next-line no-console
         } catch (e) { console.error(e); }
       }
     } catch (e) {
       this.emit('message', `<ERROR: ${e.message}>\r\n`);
+      // eslint-disable-next-line no-console
+      if (DEBUG) console.error(e);
     }
     if (this._reader) this._reader.releaseLock();
     this._reader = null;
@@ -95,6 +105,7 @@ class NavSerial extends BaseSerial {
     this.emit('currentDevice', value);
     try {
       await this.connect();
+      window.localStorage.lastSerialPort = JSON.stringify(value.getInfo());
     } catch (err) {
       if (err.message === 'Access denied.') {
         this.emit('errorPrompt', 'access_denied');
@@ -102,6 +113,25 @@ class NavSerial extends BaseSerial {
       // eslint-disable-next-line no-console
       console.error([err]);
     }
+    // eslint-disable-next-line no-console
+    if (DEBUG) console.log(value, value.getInfo());
+  }
+
+  async _initSerial() {
+    const { usbProductId, usbVendorId } = JSON.parse(window.localStorage.lastSerialPort || '{}');
+    if (!usbVendorId || !usbProductId) return;
+    const devices = await serial.getPorts();
+    const device = devices.find((d) => {
+      const info = d.getInfo();
+      return usbProductId === info.usbProductId && usbVendorId === info.usbVendorId;
+    });
+    if (device) this.setCurrentDevice(device);
+  }
+
+  readBuff() {
+    const lastRead = this._lastRead;
+    this._lastRead = null;
+    return lastRead;
   }
 
   async writeBuff(buff) {
@@ -131,11 +161,6 @@ class NavSerial extends BaseSerial {
     await writer.releaseLock();
   }
 
-  async write(message) {
-    if (this.mute) return;
-    await this.writeBuff(Buffer.from(message, this.encoding));
-  }
-
   async connect() {
     if (!this._currentDevice) {
       // console.log('skipping connect');
@@ -156,6 +181,7 @@ class NavSerial extends BaseSerial {
     // console.log(1, this._currentDevice.getSignals());
     this.connected = true;
     this.emit('connected', this.currentDevice);
+    this.emit('open');
     // const self = this;
     // this._reader = new WritableStream({
     //   start(controller) {
@@ -187,6 +213,7 @@ class NavSerial extends BaseSerial {
     // }
     this.connected = false;
     this.emit('disconnect', this.currentDevice);
+    this.emit('close');
     // eslint-disable-next-line no-console
     console.log('disconnected');
   }
@@ -204,6 +231,12 @@ class NavSerial extends BaseSerial {
     if (DEBUG) console.log('signaling', signals);
     const sigs = this._transSignal(signals);
     return this._currentDevice.setSignals(sigs);
+  }
+
+  getSignals() {
+    if (!this._currentDevice) throw new Error('Cannot read closed port.');
+    const signals = this._currentDevice.getSignals();
+    return this._transSignal(signals);
   }
 }
 
