@@ -61,7 +61,7 @@
           </v-list-item>
         <v-list-group
           v-show="findBoards({
-            query: { fqbn: new RegExp(`^${core.coreId}:`) },
+            query: { fqbn: new RegExp(`^${core.coreId}:`), supported: true },
           }).total"
           v-for="core in this.search.trim() ? [] : cores"
           :key="core.uuid"
@@ -81,7 +81,7 @@
 
           <v-list-item
             v-for="board in findBoards({
-              query: { fqbn: new RegExp(`^${core.coreId}:`) },
+              query: { fqbn: new RegExp(`^${core.coreId}:`), supported: true },
             }).data"
             :key="board.uuid"
             @click="setCurrent(board)"
@@ -154,6 +154,7 @@ export default {
       const reg = new RegExp(`(${this.search.trim().replace(/\s+/g, ')|(')})`, 'i');
       return this.findBoards({
         query: {
+          supported: true,
           $or: [{ name: reg }, { fqbn: reg }],
           $sort: { name: 1 },
         },

@@ -4,24 +4,26 @@
       <template v-slot:activator="{ on }">
         <v-btn text dense small to="/tools/servers" v-on="on">
           Server:
-          <ping-bubble :ping="currentServer.ping" class="mx-1" />
+          <v-chip
+            :color="currentServer.valid ? 'success' : 'error'"
+            class="mx-1"
+            x-small
+          >
+            {{currentServer.valid ? 'Online' : 'Offline'}}
+          </v-chip>
           <flag :iso="currentServer.country" />
         </v-btn>
       </template>
       <span>{{currentServer.name}}</span>
     </v-tooltip>
-    <v-btn text dense small v-else to="/tools/servers">Select Server</v-btn>
+    <v-btn v-else text dense small to="/tools/servers">Select Server</v-btn>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import pingBubble from './ping-bubble.vue';
 
 export default {
-  components: {
-    pingBubble,
-  },
   data() {
     return {
       dialog: false,

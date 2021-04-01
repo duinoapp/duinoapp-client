@@ -1,11 +1,8 @@
 import EventEmitter from 'events';
 import get from 'lodash/get';
 import store from '../../store';
-import avrdude from './stk500';
-
-const toolMap = {
-  avrdude,
-};
+// import avrdude from './stk500';
+import avrdude from './avrgirl';
 
 class Uploader extends EventEmitter {
   install(Vue) {
@@ -14,30 +11,37 @@ class Uploader extends EventEmitter {
     // eslint-disable-next-line no-param-reassign
     Vue.prototype.$uploader = this;
     this.Vue = Vue;
+    this.toolMap = {
+      avrdude,
+    };
   }
 
   // eslint-disable-next-line class-methods-use-this
   isSupported(board) { // eslint-disable-line no-unused-vars
-    const toolProt = `${get(board, 'props.upload.tool', '').split(':').pop()}.${get(board, 'props.upload.protocol')}`;
-    return !!get(toolMap, toolProt);
+    const tool = get(board, 'props.upload.tool', '').split(':').pop();
+    const toolProt = `${tool}.${get(board, 'props.upload.protocol')}`;
+    return !!get(this.toolMap, toolProt) && get(this.toolMap, tool).isValid(board);
   }
 
   async upload(hex, config) {
     const serial = this.Vue.$serial;
     const existBaud = serial.baud;
     const [board] = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data;
-    const baud = config?.speed ?? board?.props?.upload?.speed;
     const toolProt = `${board?.props?.upload?.tool?.split(':').pop()}.${board?.props?.upload?.protocol}`;
 
-    const uploader = get(toolMap, toolProt);
+    const uploader = get(this.toolMap, toolProt);
     if (!uploader) throw new Error('Board not currently supported');
 
     await serial.setMute(true);
-    if (baud !== existBaud) await serial.setBaud(baud);
+    await serial.disconnect();
 
-    await uploader(hex, board, serial, config);
+    await uploader(hex, board, serial.serial, {
+      ...config,
+      debug: (message) => this.Vue.$compiler.emit('console.log', message),
+    });
 
-    if (baud !== existBaud) await serial.setBaud(existBaud);
+    await serial.setBaud(existBaud);
+    await serial.connect();
     await serial.setMute(false);
   }
 }

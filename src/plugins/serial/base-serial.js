@@ -33,7 +33,8 @@ class BaseSerial extends EventEmitter {
     this.currentDevice = null;
     this.connected = false;
     this.implementation = 'basic';
-    this.isDataStreamPaused = false;
+    this.serial = null;
+    this.DEBUG = true;
   }
 
   install(Vue) {
@@ -55,17 +56,10 @@ class BaseSerial extends EventEmitter {
   async setCurrentDevice(value) { this.currentDevice = value; }
 
   async setBaud(baud) {
-    try {
-      await this.disconnect();
-      // eslint-disable-next-line no-console
-    } catch (err) { console.error(err); }
     // eslint-disable-next-line no-console
-    // console.log('disconnected');
-    this.lastBaud = this.baud;
+    if (this.DEBUG) console.log('setting speed', baud);
+    if (this.serial) await this.serial.update({ baudRate: baud });
     this.baud = baud;
-    await this.connect();
-    // eslint-disable-next-line no-console
-    // console.log('connected');
     window.localStorage.currentBaudRate = baud;
     return baud;
   }
@@ -100,15 +94,62 @@ class BaseSerial extends EventEmitter {
     return trans;
   }
 
-  async setSignals(signals) { return signals; }
+  async setSignals(signals) {
+    if (!this.serial?.isOpen) throw new Error('Cannot write to closed port.');
+    // eslint-disable-next-line no-console
+    if (this.DEBUG) console.log('signaling', signals);
+    const sigs = this._transSignal(signals);
+    return this.serial.set(sigs);
+  }
 
-  readBuff() { return null; }
+  async getSignals() {
+    if (!this.serial?.isOpen) throw new Error('Cannot read closed port.');
+    const signals = await this.serial.get();
+    return this._transSignal(signals);
+  }
 
-  async writeBuff(buff) { return buff; }
+  readBuff() {
+    return new Promise((resolve, reject) => this.serial?.read((buff, err) => {
+      if (err) reject(err);
+      else resolve();
+    }));
+  }
 
-  async connect() { this.connected = true; }
+  writeBuff(buff) {
+    // eslint-disable-next-line no-console
+    if (this.DEBUG) console.log('write', buff.toString('hex'));
+    return new Promise((resolve, reject) => this.serial.write(buff, (err) => {
+      if (err) reject(err);
+      else resolve();
+    }));
+  }
 
-  async disconnect() { this.connected = false; }
+  connect() {
+    if (!this.serial) throw new Error('Cannot connect to un-initiated device.');
+    if (!this._currentDevice || this.serial.isOpen) {
+      // eslint-disable-next-line no-console
+      if (this.DEBUG) console.log('skipping connect');
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => this.serial.open((err) => {
+      if (err) return reject(err);
+      this.connected = true;
+      this.emit('connected', this.currentDevice);
+      return resolve();
+    }));
+  }
+
+  async disconnect() {
+    if (!this._currentDevice || !this.serial?.isOpen) return;
+    this.serial.pause();
+    await this.serial.close();
+    this.serial.resume();
+    this.connected = false;
+    this.emit('disconnect', this.currentDevice);
+    this.emit('close');
+    // eslint-disable-next-line no-console
+    if (this.DEBUG) console.log('disconnected');
+  }
 
   async setDeviceName(value, name) {
     if (await this.isDevice(value)) this.devices.push({ value, name });
@@ -178,8 +219,8 @@ class BaseSerial extends EventEmitter {
     cb?.(null, sigs);
   }
 
-  read(size) {
-    const buff = this.readBuff();
+  async read(size) {
+    const buff = await this.readBuff();
     return buff && buff.slice(0, Math.min(buff.length, size || Infinity));
   }
 
@@ -188,13 +229,11 @@ class BaseSerial extends EventEmitter {
   flush(cb = () => {}) { cb?.(); }
 
   pause() {
-    this.isDataStreamPaused = true;
-    return this;
+    this.serial?.paused?.();
   }
 
   resume() {
-    this.isDataStreamPaused = true;
-    return this;
+    this.serial?.resume?.();
   }
 
   async write(message, encoding = null, cb = () => {}) {

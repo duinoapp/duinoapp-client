@@ -44,23 +44,22 @@
       bottom
       @input="toggleSerialShelf($event)"
     >
-      <v-row align="center">
-        <v-col cols="auto" class="pa-0">
+      <div>
+        <div>
           <v-tabs class="shelf-tabs" :value="$store.getters.serialTab" @change="setSerialTab">
             <v-tab href="#program">Program</v-tab>
             <v-tab href="#monitor">Monitor</v-tab>
             <v-tab href="#plotter">Plot</v-tab>
           </v-tabs>
-        </v-col>
-        <v-spacer />
-        <v-col cols="auto" class="py-0 mr-6">
+        </div>
+        <div class="right-actions">
           <compile-btn top />
           <upload-btn top />
-          <v-btn icon @click="toggleSerialShelf">
+          <v-btn class="ml-2" icon @click="toggleSerialShelf">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-        </v-col>
-      </v-row>
+        </div>
+      </div>
       <v-tabs-items :value="$store.getters.serialTab" @change="setSerialTab">
         <v-tab-item value="program" eager>
           <compile-console height="calc(50vh - 73px)"/>
@@ -75,7 +74,7 @@
     </v-navigation-drawer>
 
     <v-footer dense app style="z-index: 10">
-      <v-row>
+      <v-row style="display: contents;">
         <div style="line-height: 28px;">
           Duino.App &copy; {{ new Date().getFullYear() }}
         </div>
@@ -155,5 +154,11 @@ export default {
 
 .shelf-tabs > .v-tabs-bar {
   background-color: transparent !important;
+}
+
+.right-actions {
+  position: absolute;
+  right: 24px;
+  top: 4px;
 }
 </style>

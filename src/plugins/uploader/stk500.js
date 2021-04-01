@@ -27,4 +27,6 @@ const arduino = async (hex, board, serial, config) => {
   await serial.setSignals('off');
 };
 
-export default { arduino, stk500: normal };
+export default {
+  arduino, stk500: normal, wiring: normal, avr109: normal,
+};

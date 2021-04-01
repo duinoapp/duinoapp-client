@@ -15,20 +15,29 @@
         outlined
         single-line
         hide-details
+        clearable
       />
     </v-col>
     <v-col cols="12">
       <libs-table :search="search" />
+    </v-col>
+    <v-col cols="12">
+      <h2>Project Libraries</h2>
+    </v-col>
+    <v-col cols="12">
+      <project-libs :search.sync="search" />
     </v-col>
   </v-row>
 </template>
 
 <script>
 import LibsTable from '@/components/libs/libs-table.vue';
+import ProjectLibs from '@/components/libs/project-libs.vue';
 
 export default {
   components: {
     LibsTable,
+    ProjectLibs,
   },
   data() {
     return {

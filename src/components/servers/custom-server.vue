@@ -6,14 +6,16 @@
       :error-messages="err ? [err] : []"
       @change="checkUrl"
       hint="https://example.com"
-      :color="serverData && serverData.ping > 0 ? 'success' : undefined"
+      :color="serverData ? 'success' : undefined"
     >
       <template v-slot:label>
         Server Address
-        <ping-bubble v-if="serverData && serverData.ping > 0" :ping="serverData.ping"/>
+        <v-chip v-show="serverData" color="success" small class="py-0">
+          Valid
+        </v-chip>
       </template>
     </v-text-field>
-    <v-btn @click="addServer" :disabled="!serverData || serverData.ping <= 0" class="ml-2">
+    <v-btn @click="addServer" class="ml-2">
       <v-icon left>mdi mdi-plus</v-icon>
       Add Server
     </v-btn>
@@ -33,12 +35,8 @@
 </template>
 
 <script>
-import PingBubble from './ping-bubble.vue';
 
 export default {
-  components: {
-    PingBubble,
-  },
   data() {
     return {
       url: '',
@@ -47,35 +45,47 @@ export default {
       success: false,
     };
   },
+  computed: {
+    address() {
+      const protocol = this.url.includes('http://') ? 'http://' : 'https://';
+      return `${protocol}${this.url.trim().replace(/\/$/, '').replace(/^https?:\/\//, '')}`;
+    },
+  },
   methods: {
     async checkUrl() {
       if (!this.url) return;
       const { Server } = this.$FeathersVuex.api;
       this.serverData = null;
       this.err = '';
-      if ((await Server.find({ query: { address: this.url.trim() } })).length) {
+      const serv = { address: this.address };
+      if ((await Server.find({ query: serv })).length) {
         this.err = 'Server already exists.';
         return;
       }
       try {
-        this.serverData = await this.$compiler.pingServer(this.url.trim(), 5000);
+        this.serverData = await this.$compiler.serverReq('info/server', null, serv);
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err);
         this.err = 'Invalid server address.';
       }
-      if (this.serverData && this.serverData.ping <= 0) {
+      if (!this.serverData) {
         this.err = 'Unable to connect to the server.';
       }
     },
     async addServer() {
       await this.checkUrl();
-      if (!this.serverData || this.serverData.ping <= 0) return;
+      if (!this.serverData) return;
       const { Server } = this.$FeathersVuex.api;
-      const server = new Server({ ...this.serverData, isCustom: true, address: this.url });
+      const server = new Server({
+        ...this.serverData,
+        isCustom: true,
+        address: this.address,
+        valid: true,
+      });
       await server.save();
       this.url = '';
-      this.serverData = {};
+      this.serverData = null;
       this.success = true;
       this.$store.commit('setCurrentServer', server.uuid);
     },

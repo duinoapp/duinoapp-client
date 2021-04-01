@@ -1,40 +1,42 @@
 <template>
-  <div>
+  <div style="height: calc(50vh - 52px)">
     <div :id="id" :style="{ height }" />
-    <v-row class="px-4">
-      <v-col cols="2" class="py-0">
-        <v-select v-model="timeWindow" :items="windows" dense hide-details />
-      </v-col>
-      <v-col cols="2" class="py-0">
-        <rate />
-      </v-col>
-      <v-col cols="auto" class="py-0 mr-6">
-        <v-tooltip top>
-          <template #activator="{ on }">
-            <v-btn icon @click="clearCB && clearCB()" v-on="on">
-              <v-icon>mdi-cancel</v-icon>
-            </v-btn>
-          </template>
-          <span>Clear Monitor</span>
-        </v-tooltip>
-        <v-tooltip top>
-          <template #activator="{ on }">
-            <v-btn icon @click="paused = !paused" v-on="on">
-              <v-icon>mdi-{{ paused ? 'play' : 'pause'}}</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ paused ? 'Play' : 'Pause'}} Monitor</span>
-        </v-tooltip>
-        <v-tooltip top>
-          <template #activator="{ on }">
-            <v-btn icon @click="chartOpts.axisY.includeZero = !chartOpts.axisY.includeZero" v-on="on">
-              <v-icon>mdi-{{ chartOpts.axisY.includeZero ? 'arrow-up-down' : 'arrow-vertical-lock'}}</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ chartOpts.axisY.includeZero ? 'Auto Scale Y' : 'Lock Y to Zero'}}</span>
-        </v-tooltip>
-      </v-col>
-    </v-row>
+    <div class="plot-tools">
+      <v-row class="px-4">
+        <v-col cols="2" class="py-0">
+          <v-select v-model="timeWindow" :items="windows" dense hide-details />
+        </v-col>
+        <v-col cols="2" class="py-0">
+          <rate />
+        </v-col>
+        <v-col cols="auto" class="py-0 mr-6">
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <v-btn icon @click="clearCB && clearCB()" v-on="on">
+                <v-icon>mdi-cancel</v-icon>
+              </v-btn>
+            </template>
+            <span>Clear Monitor</span>
+          </v-tooltip>
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <v-btn icon @click="paused = !paused" v-on="on">
+                <v-icon>mdi-{{ paused ? 'play' : 'pause'}}</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ paused ? 'Play' : 'Pause'}} Monitor</span>
+          </v-tooltip>
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <v-btn icon @click="chartOpts.axisY.includeZero = !chartOpts.axisY.includeZero" v-on="on">
+                <v-icon>mdi-{{ chartOpts.axisY.includeZero ? 'arrow-up-down' : 'arrow-vertical-lock'}}</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ chartOpts.axisY.includeZero ? 'Auto Scale Y' : 'Lock Y to Zero'}}</span>
+          </v-tooltip>
+        </v-col>
+      </v-row>
+    </div>
   </div>
 </template>
 
@@ -150,3 +152,11 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+.plot-tools {
+  position: absolute;
+  width: 100%;
+  bottom: 12px;
+}
+</style>

@@ -13,6 +13,7 @@ class Project extends BaseModel {
       name: '',
       desc: '',
       localPath: null,
+      libraries: [],
       ...meta(),
     };
   }

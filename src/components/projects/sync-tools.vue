@@ -24,6 +24,16 @@
         </template>
       </save-project>
     </v-col>
+    <v-col cols="auto">
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <v-btn icon to="/tools/libraries" v-on="on">
+            <v-icon>mdi mdi-book-open-variant</v-icon>
+          </v-btn>
+        </template>
+        <span>Libraries</span>
+      </v-tooltip>
+    </v-col>
   </v-row>
 </template>
 
