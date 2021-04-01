@@ -83,6 +83,14 @@
             <v-icon small left>mdi-bug-outline</v-icon>
             Issues
           </v-btn>
+          <v-btn href="https://github.com/duinoapp/duinoapp-client/wiki/Privacy-Policy" target="_blank" rel="noopener noreferrer" text small>
+            <v-icon small left>mdi-incognito</v-icon>
+            Privacy
+          </v-btn>
+          <v-btn href="https://github.com/duinoapp/duinoapp-client/wiki/Terms-of-Service" target="_blank" rel="noopener noreferrer" text small>
+            <v-icon small left>mdi-scale-balance</v-icon>
+            Terms
+          </v-btn>
         </div>
         <v-spacer/>
         <serial-footer v-if="serialReady" />
