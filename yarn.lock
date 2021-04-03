@@ -3121,6 +3121,11 @@ cosmiconfig@^5.0.0:
     js-yaml "^3.13.1"
     parse-json "^4.0.0"
 
+country-code-emoji@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/country-code-emoji/-/country-code-emoji-2.2.0.tgz#afc99b8bbaff9cb038e370dc46faabbd7af48f64"
+  integrity sha512-iK7tw8pRbFIad7a3UDbx13SJpZj4ZReozc6oW6K6Wu4sAphQkJVxK8qfaPjFIXp22RoP/238WEDrKpIWxxI9CQ==
+
 create-ecdh@^4.0.0:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.4.tgz#d6e7f4bffa66736085a0762fd3a632684dabcc4e"
@@ -4527,11 +4532,6 @@ find-up@^4.0.0:
   dependencies:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
-
-flag-icon-css@^2.8.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/flag-icon-css/-/flag-icon-css-2.9.0.tgz#5793c15244e3c63ae36631478a758a3fc29c86be"
-  integrity sha512-SeHvGEB43XFPZiJz6lFFRGHfp+Db+s1qGiClW70cZauQVbPM42wImlNUEuXSXs94kPchz7xvoxP0QK1y6FxLfg==
 
 flat-cache@^3.0.4:
   version "3.0.4"
@@ -9514,13 +9514,6 @@ vue-eslint-parser@^7.0.0, vue-eslint-parser@^7.6.0:
     espree "^6.2.1"
     esquery "^1.4.0"
     lodash "^4.17.15"
-
-vue-flag-icon@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/vue-flag-icon/-/vue-flag-icon-1.0.6.tgz#0304fdfeebd982a6bf985c633c346ff3c6d2f9d7"
-  integrity sha1-AwT9/uvZgqa/mFxjPDRv88bS+dc=
-  dependencies:
-    flag-icon-css "^2.8.0"
 
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"

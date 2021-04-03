@@ -11,10 +11,10 @@
           >
             {{currentServer.valid ? 'Online' : 'Offline'}}
           </v-chip>
-          <flag :iso="currentServer.country" />
+          {{flag}}
         </v-btn>
       </template>
-      <span>{{currentServer.name}}</span>
+      <span>{{currentServer.name}} ({{currentServer.country}})</span>
     </v-tooltip>
     <v-btn v-else text dense small to="/tools/servers">Select Server</v-btn>
   </div>
@@ -22,6 +22,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import { countryCodeEmoji } from 'country-code-emoji';
 
 export default {
   data() {
@@ -34,6 +35,9 @@ export default {
     currentServer() {
       const { Server } = this.$FeathersVuex.api;
       return Server.findInStore({ query: { uuid: this.currentServerId } }).data[0] || {};
+    },
+    flag() {
+      return this.currentServer.country && countryCodeEmoji(this.currentServer.country);
     },
   },
 };

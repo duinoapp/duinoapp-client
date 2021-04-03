@@ -1,12 +1,9 @@
 import Vue from 'vue';
 import './serial';
-import FlagIcon from 'vue-flag-icon';
 import CompileServer from './compile-server';
 import CurrentStore from './current-store';
 import Bundler from './bundler';
 import Uploader from './uploader';
-
-Vue.use(FlagIcon);
 
 Vue.use(CurrentStore);
 Vue.use(CompileServer);

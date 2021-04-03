@@ -18,7 +18,7 @@
       <br>&nbsp;
     </v-col>
     <v-col cols="auto">
-      <span class="title">Click on a server to select it.</span>
+      <span class="text-h6">Click on a server to select it.</span>
     </v-col>
     <v-spacer />
     <v-col cols="auto">
@@ -58,7 +58,7 @@
             >
               <v-list-item two-line>
                 <v-list-item-content>
-                  <v-list-item-title class="headline">
+                  <v-list-item-title class="text-h5">
                     {{ item.name }}
                   </v-list-item-title>
                   <v-list-item-subtitle>
@@ -100,10 +100,10 @@
                 <v-list-item>
                   <v-list-item-content>Location:</v-list-item-content>
                   <v-list-item-content class="align-end">
-                    {{ item.location }}
+                    {{ item.location }}, {{item.country}}
                   </v-list-item-content>
                   <v-list-item-icon>
-                    <flag :iso="item.country"/>
+                    {{item.country && countryCodeEmoji(item.country)}}
                   </v-list-item-icon>
                 </v-list-item>
                 <v-list-item>
@@ -137,6 +137,7 @@
 </template>
 <script>
 import { mapGetters } from 'vuex';
+import { countryCodeEmoji } from 'country-code-emoji';
 import CustomServer from '../../components/servers/custom-server.vue';
 
 export default {
@@ -155,6 +156,7 @@ export default {
     },
   },
   methods: {
+    countryCodeEmoji,
     cleanLink(link) {
       return link.replace(/^https?:\/\//, '');
     },
