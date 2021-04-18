@@ -2,14 +2,15 @@
   <div :style="{ height: 'calc( 100% - 61px )' }" id="tree-wrap" @click.right="showMenu">
     <v-treeview
       v-model="tree"
-      :open="open"
+      :open.sync="open"
       :items="items"
+      :key="currentFile.ref"
       item-key="name"
       activatable
       open-on-click
       dense
       return-object
-      :active.sync="active"
+      :active="active"
       @update:active="updateActive($event[0])"
     >
       <template #prepend="{ item, open }">
@@ -24,13 +25,19 @@
         <v-icon v-if="get(item, 'editor.body')">mdi-circle-medium</v-icon>
       </template>
       <template #label="{ item }">
-        <v-tooltip top>
+        <v-tooltip right>
           <template #activator="{ on }">
-            <div v-on="on" @click.right.stop="(e) => showMenu(e, item)">
+            <div
+              :class="{ 'text-decoration-underline': item.main && items.length > 1 }"
+              v-on="on"
+              @click.right.stop="(e) => showMenu(e, item)"
+            >
               {{ item.name.split('/').pop() }}
             </div>
           </template>
           <span>{{ item.name.split('/').pop() }}</span>
+          &nbsp;
+          <span v-show="item.main">(Entry .ino file)</span>
         </v-tooltip>
       </template>
     </v-treeview>
@@ -129,6 +136,7 @@
 import { mapGetters } from 'vuex';
 import set from 'lodash/set';
 import get from 'lodash/get';
+import sortBy from 'lodash/sortBy';
 import FilesAddFile from './add-file.vue';
 import FilesAddFolder from './add-folder.vue';
 
@@ -178,19 +186,23 @@ export default {
         query: { projectId: this.currentProject.uuid },
       }).data;
       const filesObject = files.reduce((a, file) => set(a, file.name.replace(/\./g, '').replace(/\//g, '.'), file), {});
-      const processObject = (obj, ref) => Object.keys(obj).reduce((a, i) => {
+      const processObject = (obj, ref) => sortBy(Object.keys(obj).reduce((a, i) => {
         if (!obj[i]._id) return [...a, { name: i, ref: `${ref}${i}/`, children: processObject(obj[i], `${ref}${i}/`) }];
         const text = obj[i].name.split('/').pop();
         return text === '.gitkeep' ? a : [...a, obj[i]];
-      }, []);
+      }, []), [(v) => !!v.children, (v) => v.name.split('/').pop().toLowerCase()]);
       const filesArray = processObject(filesObject, `${this.currentProject.ref}/`);
       return filesArray;
     },
   },
   methods: {
     updateActive(item) {
-      if (!item || !item.uuid || item.uuid === this.currentFile?.uuid) return;
-      this.setCurrent(item);
+      if (item?.uuid && item.uuid !== this.currentFile?.uuid) {
+        this.setCurrent(item);
+      }
+      setTimeout(() => {
+        this.setActive();
+      }, 100);
     },
     setActive() {
       if (!this.currentFile?.uuid) return;
@@ -227,11 +239,6 @@ export default {
     },
   },
   watch: {
-    active(to, from) {
-      if (to && !to.length && (!from || from.length)) {
-        this.setActive();
-      }
-    },
     currentFile(to, from) {
       if (to && to.uuid && to.uuid !== from.uuid) this.setActive();
     },
