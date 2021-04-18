@@ -12,22 +12,13 @@
         a program that is imaginatively called a "compiler".
       </p>
       <p v-if="info">
-        Unfortunately, this application is not able to run a compiler, this means we need to ask
-        another computer to run a compiler for us. This other computer is called a
-        "Compile Server". You want to make sure that the compile server is as close to you as
-        possile. A way we can tell how close a server is, is by using a ping, the lower the ping
-        the better.
-      </p>
-      <p v-if="info">
-        We aim to have as many compile servers available as possible around the world.
-        If you don't have a server close enough to have a low ping, let us know or even consider
-        hosting a server in our network.
-        <a href="https://github.com/spaceneedle/chromeduino">More information can be found here.</a>
+        Unfortunately, this application is not able to run a compiler locally, this means we need to ask
+        another computer to run a compiler for us. This other computer is called a "Compile Server".
       </p>
       <br>&nbsp;
     </v-col>
     <v-col cols="auto">
-      <span class="title">Click on a server to select it.</span>
+      <span class="text-h6">Click on a server to select it.</span>
     </v-col>
     <v-spacer />
     <v-col cols="auto">
@@ -35,7 +26,7 @@
     </v-col>
     <v-col cols="12">
       <v-data-iterator
-        :items="find({ query: { ping: { $gte: 0 }, $sort: { isCustom: 1, ping: 1 } } }).data"
+        :items="find({ query: { valid: true, $sort: { isCustom: 1 } } }).data"
         content-class="v-layout"
         row wrap
         align-center justify-center fill-height
@@ -67,7 +58,7 @@
             >
               <v-list-item two-line>
                 <v-list-item-content>
-                  <v-list-item-title class="headline">
+                  <v-list-item-title class="text-h5">
                     {{ item.name }}
                   </v-list-item-title>
                   <v-list-item-subtitle>
@@ -107,19 +98,12 @@
                   <v-list-item-icon/>
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-content>Ping:</v-list-item-content>
-                  <v-list-item-content :class="`align-end ${pingClass(item.ping)}`">
-                    {{ item.ping }} ms
-                  </v-list-item-content>
-                  <v-list-item-icon/>
-                </v-list-item>
-                <v-list-item>
                   <v-list-item-content>Location:</v-list-item-content>
                   <v-list-item-content class="align-end">
-                    {{ item.location }}
+                    {{ item.location }}, {{item.country}}
                   </v-list-item-content>
                   <v-list-item-icon>
-                    <flag :iso="item.country"/>
+                    {{item.country && countryCodeEmoji(item.country)}}
                   </v-list-item-icon>
                 </v-list-item>
                 <v-list-item>
@@ -153,6 +137,7 @@
 </template>
 <script>
 import { mapGetters } from 'vuex';
+import { countryCodeEmoji } from 'country-code-emoji';
 import CustomServer from '../../components/servers/custom-server.vue';
 
 export default {
@@ -171,11 +156,7 @@ export default {
     },
   },
   methods: {
-    pingClass(ping) {
-      if (ping <= 100) return 'success--text';
-      if (ping <= 250) return 'warning--text';
-      return 'error--text';
-    },
+    countryCodeEmoji,
     cleanLink(link) {
       return link.replace(/^https?:\/\//, '');
     },

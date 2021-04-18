@@ -14,18 +14,6 @@
           />
         </v-col>
         <v-col cols="12" sm="6" md="4" class="py-0">
-          <v-text-field
-            v-model.number="settings.value.autoSaveInterval"
-            label="Auto-Save Interval"
-            hint="Seconds between auto-saves. 0 disables auto-save."
-            type="number"
-            min="0"
-            step="1"
-            persistent-hint
-            outlined
-          />
-        </v-col>
-        <v-col cols="12" sm="6" md="4" class="py-0">
           <v-combobox
             v-model.number="settings.value.fontSize"
             :items="[8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48]"
@@ -35,6 +23,8 @@
             outlined
           />
         </v-col>
+      </v-row>
+      <v-row>
         <v-col cols="12" sm="6" md="4" class="py-0">
           <v-checkbox
             :input-value="settings.value.wordWrap !== 'off'"

@@ -3,7 +3,7 @@
     <v-navigation-drawer app clipped permanent>
       <v-list class="pt-0">
         <v-list-item flat to="/tools/projects">
-          <v-list-item-icon><v-icon left>mdi-wrench</v-icon></v-list-item-icon>
+          <v-list-item-icon><v-icon left>mdi-folder-star-outline</v-icon></v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title>Projects</v-list-item-title>
           </v-list-item-content>

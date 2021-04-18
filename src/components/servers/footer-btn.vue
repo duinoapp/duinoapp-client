@@ -4,24 +4,27 @@
       <template v-slot:activator="{ on }">
         <v-btn text dense small to="/tools/servers" v-on="on">
           Server:
-          <ping-bubble :ping="currentServer.ping" class="mx-1" />
-          <flag :iso="currentServer.country" />
+          <v-chip
+            :color="currentServer.valid ? 'success' : 'error'"
+            class="mx-1"
+            x-small
+          >
+            {{currentServer.valid ? 'Online' : 'Offline'}}
+          </v-chip>
+          {{flag}}
         </v-btn>
       </template>
-      <span>{{currentServer.name}}</span>
+      <span>{{currentServer.name}} ({{currentServer.country}})</span>
     </v-tooltip>
-    <v-btn text dense small v-else to="/tools/servers">Select Server</v-btn>
+    <v-btn v-else text dense small to="/tools/servers">Select Server</v-btn>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import pingBubble from './ping-bubble.vue';
+import { countryCodeEmoji } from 'country-code-emoji';
 
 export default {
-  components: {
-    pingBubble,
-  },
   data() {
     return {
       dialog: false,
@@ -32,6 +35,9 @@ export default {
     currentServer() {
       const { Server } = this.$FeathersVuex.api;
       return Server.findInStore({ query: { uuid: this.currentServerId } }).data[0] || {};
+    },
+    flag() {
+      return this.currentServer.country && countryCodeEmoji(this.currentServer.country);
     },
   },
 };

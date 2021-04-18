@@ -1,51 +1,53 @@
 <template>
-  <div>
+  <div style="height: calc(50vh - 52px)">
     <terminal ref="term" :height="height" />
-    <v-row class="px-4" align="center">
-      <v-col class="py-0">
-        <v-text-field
-          v-model="text"
-          dense
-          hide-details
-          append-outer-icon="mdi-send"
-          autocomplete="off"
-          @click:append-outer="send"
-          @keydown.enter="send"
-        />
-      </v-col>
-      <v-col cols="auto" class="py-0">
-        <v-checkbox
-          v-model="newline"
-          hide-details
-          class="mt-0"
-        >
-          <template #label>
-            <div>
-              NL
-              <v-tooltip top>
-                <template #activator="{ on }">
-                  <v-icon small class="ml-1 mb-1" v-on="on">mdi-information-outline</v-icon>
-                </template>
-                <span>Append a new line character (\n) to the end before sending</span>
-              </v-tooltip>
-            </div>
-          </template>
-        </v-checkbox>
-      </v-col>
-      <v-col cols="2" class="py-0">
-        <rate />
-      </v-col>
-      <v-col cols="auto" class="py-0 mr-6">
-        <v-tooltip top>
-          <template #activator="{ on }">
-            <v-btn icon @click="$refs.term.clear()" v-on="on">
-              <v-icon>mdi-cancel</v-icon>
-            </v-btn>
-          </template>
-          <span>Clear Monitor</span>
-        </v-tooltip>
-      </v-col>
-    </v-row>
+    <div class="monitor-tools">
+      <v-row class="px-4" align="center">
+        <v-col class="py-0">
+          <v-text-field
+            v-model="text"
+            dense
+            hide-details
+            append-outer-icon="mdi-send"
+            autocomplete="off"
+            @click:append-outer="send"
+            @keydown.enter="send"
+          />
+        </v-col>
+        <v-col cols="auto" class="py-0">
+          <v-checkbox
+            v-model="newline"
+            hide-details
+            class="mt-0"
+          >
+            <template #label>
+              <div>
+                NL
+                <v-tooltip top>
+                  <template #activator="{ on }">
+                    <v-icon small class="ml-1 mb-1" v-on="on">mdi-information-outline</v-icon>
+                  </template>
+                  <span>Append a new line character (\n) to the end before sending</span>
+                </v-tooltip>
+              </div>
+            </template>
+          </v-checkbox>
+        </v-col>
+        <v-col cols="2" class="py-0">
+          <rate />
+        </v-col>
+        <v-col cols="auto" class="py-0 mr-6">
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <v-btn icon @click="$refs.term.clear()" v-on="on">
+                <v-icon>mdi-cancel</v-icon>
+              </v-btn>
+            </template>
+            <span>Clear Monitor</span>
+          </v-tooltip>
+        </v-col>
+      </v-row>
+    </div>
   </div>
 </template>
 
@@ -100,3 +102,11 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+.monitor-tools {
+  position: absolute;
+  width: 100%;
+  bottom: 12px;
+}
+</style>

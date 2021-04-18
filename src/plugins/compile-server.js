@@ -1,12 +1,7 @@
 import EventEmitter from 'events';
-import io from 'socket.io-client';
-import stats from 'stats-lite';
 import omit from 'lodash/omit';
-import get from 'lodash/get';
 import store from '../store';
 import { genId } from '../store/tools';
-
-const asyncTimeout = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
 class CompileServer extends EventEmitter {
   constructor() {
@@ -14,9 +9,12 @@ class CompileServer extends EventEmitter {
     this.url = null;
     this.socket = null;
     this.initialising = true;
+    this.initPromise = new Promise((resolve) => {
+      this._initResolve = resolve;
+    });
     store.subscribe((mutation) => {
       if (mutation.type === 'setCurrentServer') {
-        this.setServer(store.getters['servers/find']({ query: { uuid: store.getters.currentServer } }).data[0]);
+        this.load();
       }
     });
   }
@@ -30,6 +28,23 @@ class CompileServer extends EventEmitter {
     this.fetchServers();
   }
 
+  currentServer() {
+    const { Server } = this.Vue.$FeathersVuex.api;
+    return Server.findInStore({ query: { uuid: store.getters.currentServer } }).data[0];
+  }
+
+  isValid() {
+    return !!this.currentServer()?.valid;
+  }
+
+  async serverReq(path, opts = {}, server = null) {
+    const { address } = server || this.currentServer() || {};
+    if (!address) return null;
+    const res = await fetch(`${address}/v3/${path}`, opts);
+    if (!res.ok || res.status === 204) return null;
+    return res.json();
+  }
+
   async fetchServers() {
     const { Server } = this.Vue.$FeathersVuex.api;
     const res = await fetch('/servers.json');
@@ -40,87 +55,48 @@ class CompileServer extends EventEmitter {
       await server.save();
     }));
     await Promise.all((await Server.find()).map(async (server) => {
-      const serverData = await this.pingServer(server.address);
-      Object.keys(serverData).forEach((i) => {
+      let serverData;
+      try {
+        serverData = await this.serverReq('info/server', null, server);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(err);
+      }
+      Object.keys(serverData || {}).forEach((i) => {
         // eslint-disable-next-line no-param-reassign
         server[i] = serverData[i];
       });
+      // eslint-disable-next-line no-param-reassign
+      server.valid = !!serverData;
       await server.patch();
-      if (server.uuid && server.uuid === store.getters.currentServer) {
-        this.setServer(server);
+      if (server.uuid === store.getters.currentServer) {
+        await this.load();
       }
     }));
     if (!store.getters.currentServer) {
-      const [server] = Server.findInStore({ query: { ping: { $gt: 0 }, $sort: { ping: 1 }, $limit: 1 } }).data;
+      const [server] = Server.findInStore({ query: { valid: true, $limit: 1 } }).data;
       if (server) store.commit('setCurrentServer', server.uuid);
     }
     this.initialising = false;
+    this._initResolve?.();
   }
 
-  async waitInit(count = 0) {
-    if (!this.initialising || count > 40) return;
-    await asyncTimeout(500);
-    await this.waitInit(count + 1);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  pingServer(url, timeout = 10000) {
-    return new Promise((resolve) => {
-      const sampleSize = 10;
-      const socket = io(`${url}/ping`.replace('//ping', '/ping'));
-      const pings = [];
-      let start;
-      let serverData = {};
-      const pingCB = (data) => {
-        if (start) pings.push(Date.now() - start);
-        start = Date.now();
-        serverData = data;
-        if (pings.length < sampleSize) return socket.emit('p', pingCB);
-        if (pings.length > sampleSize) return Math.random();
-        socket.disconnect();
-        if (stats.stdev(pings) > 200) return this.pingServer(url, timeout).then(resolve);
-        return resolve({ ...serverData, ping: stats.mean(pings) });
-      };
-      socket.emit('p', pingCB);
-      setTimeout(() => {
-        if (pings.length > 0) return;
-        socket.disconnect();
-        resolve({ ...serverData, ping: -2 });
-      }, timeout);
-    });
-  }
-
-  setServer(serverConfig) {
-    if (!serverConfig) return;
-    this.url = serverConfig.address;
-    this.server = serverConfig;
-    // window.localStorage.existingAddress = this.url;
-    // eslint-disable-next-line no-console
-    console.log(`loading server: ${this.url}`);
-    this.load();
+  waitInit() {
+    return this.initPromise;
   }
 
   async load() {
-    const { Core, Board /* , Library */ } = this.Vue.$FeathersVuex.api;
-    await this.connect();
-    const cores = (await this.socket.emitAsync('info.cores')); // .map(core => new Core({ ...omit(core, ['uuid']), coreId: core.uuid }));
-    const boards = (await this.socket.emitAsync('info.boards')); // .map(board => new Board(board));
-    // const libraries = (await this.socket.emitAsync('info.libraries'));
-    // // .map(lib => new Library(lib));
-    this.disconnect();
-    // await Promise.all(
-    //   (await Core.find()).map(core => !cores.some(c => c.uuid === core.uuid) && core.remove()),
-    // );
-    // await Promise.all(
-    //   (await Board.find()).map(board => !boards.some(b => b.uuid === board.uuid) && board.remove()),
-    // );
-    // await Promise.all(
-    //   (await Library.find()).map(lib => !libraries.some(l => l.uuid === lib.uuid) && lib.remove()),
-    // );
+    // eslint-disable-next-line no-console
+    console.log(this.isValid());
+    if (!this.isValid()) return;
+    // eslint-disable-next-line no-console
+    console.log('loading start');
+    const { Core, Board } = this.Vue.$FeathersVuex.api;
 
-    // console.log('saving cores', cores);
+    const cores = await this.serverReq('info/cores');
+    const boards = await this.serverReq('info/boards');
+
     const existingCores = (await Core.find()).reverse();
-    // console.log('saving cores', existingCores.length);
     const coreIds = await Promise.all(cores.map(
       async (core) => {
         const coreId = genId(core.id, 'cores');
@@ -130,9 +106,8 @@ class CompileServer extends EventEmitter {
         return coreId;
       },
     ));
-    // console.log('saving boards', boards);
+
     const existingBoards = (await Board.find()).reverse();
-    // console.log('saving boards', existingBoards.length);
     const boardIds = await Promise.all(boards.map(async (board) => {
       const boardId = genId(board.fqbn, 'boards');
       const existing = existingBoards.find((eboard) => eboard.uuid === boardId);
@@ -141,7 +116,7 @@ class CompileServer extends EventEmitter {
         board.config_options.forEach((option) => {
           // eslint-disable-next-line no-param-reassign
           option.values = option.values.map((val) => ({ ...val, isDefault: val.selected }));
-          const exOption = existing.config_options.find((opt) => opt.option === option.option);
+          const exOption = existing?.config_options?.find((opt) => opt.option === option.option);
           if (!exOption) return;
           // eslint-disable-next-line no-param-reassign
           option.values = option.values.map((value) => ({
@@ -150,87 +125,41 @@ class CompileServer extends EventEmitter {
           }));
         });
         existing.config_options = board.config_options;
-        existing.name = board.name;
       }
       if (existing) {
+        existing.name = board.name;
+        existing.properties = board.properties;
+        existing.productIds = board.identification_pref?.map((pref) => parseInt(pref.usbID?.PID?.replace, 16));
+        existing.supported = this.Vue.$uploader.isSupported(existing);
         await existing.save();
       } else {
         const b = new Board(board);
+        b.supported = this.Vue.$uploader.isSupported(b);
         await b.save();
       }
       return boardId;
     }));
-    // console.log('saving libs');
-    // const start = Date.now();
-    // const existingLibs = (await Library.find()).reverse();
-    // console.log('saving libs', existingLibs.length);
-    // const libIds = await chunk(libraries, 10)
-    //   .reduce((a, libs) => new Promise(async (resolve) => {
-    //   const b = await a;
-    //   // setTimeout(resolve, 50);
-    //   setTimeout(() => requestAnimationFrame(async () => {
-    //     const c = await Promise.all(libs.map(async (lib) => {
-    //       const libId = genId(lib.name, 'libraries');
-    //       if (!existingLibs.some(elib => elib.uuid === libId)) {
-    //         await (new Library(omit(lib, ['resources']))).save();
-    //       }
-    //       return libId;
-    //     }));
-    //     resolve([...b, ...c]);
-    //   }), 50);
-    // }), Promise.resolve([]));
-    // console.log('finished loading server details', Date.now() - start);
+
     await Promise.all(
       (await Core.find({ query: { uuid: { $nin: coreIds } } })).map((core) => core.remove()),
     );
     await Promise.all(
       (await Board.find({ query: { uuid: { $nin: boardIds } } })).map((board) => board.remove()),
     );
-    // await Promise.all(
-    //   (await Library.find({ query: { uuid: { $nin: libIds } } })).map(lib => lib.remove()),
-    // );
-    // console.log('cleaned old fields');
+    // eslint-disable-next-line no-console
+    console.log('loading finished');
   }
 
   async librariesSearch(search, limit = 10, skip = 0, sortBy = 'name', sortDesc = false) {
-    await this.waitInit();
-    if (!this.server) {
-      return {
-        limit, skip, total: 0, data: [],
-      };
-    }
-    const connected = !!this.socket;
-    if (!connected) await this.connect();
-    const res = await this.socket.emitAsync('info.librariesSearch', {
-      search, limit, skip, sortBy, sortDesc,
-    });
-    if (!connected) this.disconnect();
-    return res;
-  }
-
-  connect(silent = false) {
-    return new Promise((res) => {
-      this.socket = io(this.url);
-      this.socket.once('ready', res);
-      this.socket.emitAsync = (action, payload) => new Promise((resolve) => {
-        if (typeof payload !== 'undefined') this.socket.emit(action, payload, resolve);
-        else this.socket.emit(action, resolve);
-      });
-      if (!silent) {
-        this.socket.on('console.log', (msg) => this.emit('console.log', msg));
-        this.socket.on('console.error', (msg) => this.emit('console.error', msg));
-      }
-    });
-  }
-
-  disconnect() {
-    this.socket.disconnect();
-    this.socket = null;
-  }
-
-  _setSketch() {
-    const project = store.getters['projects/find']({ query: { uuid: store.getters.currentProject } }).data[0];
-    return this.socket.emitAsync('files.setSketch', `${project.ref}/`);
+    // eslint-disable-next-line no-console
+    console.log('lib-search');
+    await this.initPromise;
+    const e = encodeURIComponent;
+    const query = `?search=${e(search ?? '')}&limit=${limit}&skip=${skip}&sortBy=${e(sortBy)}&sortDesc=${sortDesc}`;
+    const res = await this.serverReq(`info/libraries${query}`);
+    return res || {
+      limit, skip, total: 0, data: [],
+    };
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -249,46 +178,70 @@ class CompileServer extends EventEmitter {
     const [settings] = store.getters['settings/find']({ query: { key: 'compiler' } }).data;
     return {
       verbose: settings?.value?.verbose || false,
+      preferLocal: settings?.value?.preferLocal || false,
     };
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  _getUploadSpeed() {
-    const board = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data[0];
-    const speed = get(board, 'props.upload.speed', 115200);
-    if (get(board, 'config.cpu')) {
-      return get(board, `props.menu.cpu.${get(board, 'config.cpu')}.upload.speed`, speed);
-    }
-    return speed;
+  async _getLibs({ libraries }) {
+    if (!libraries?.length) return [];
+    const search = libraries.map(({ name }) => name.replaceAll(' ', '.')).join(' ');
+    const { data } = await this.librariesSearch(search, libraries.length);
+    return libraries.map((lib) => ({
+      ...lib,
+      url: data
+        ?.find(({ name }) => name === lib.name)?.urls
+        ?.find(({ version }) => version === lib.version)?.url,
+    }));
   }
 
-  async compile(close = true) {
-    const mod = close ? 2 : 1;
+  async compile(mod = 2, logErr = true) {
     this.emit('console.clear');
-    this.emit('console.progress', { percent: 0 * mod, message: 'Connecting to compile server...' });
-    await this.connect();
-    this.emit('console.progress', { percent: 0.05 * mod, message: 'Uploading current code files...' });
     // await this._setSketch();
     const project = store.getters['projects/find']({ query: { uuid: store.getters.currentProject } }).data[0];
     const files = store.getters['files/find']({ query: { projectId: project.uuid } }).data
       .map((f) => ({ content: f.body, name: `${project.ref}/${f.name}` }));
+    this.emit('console.progress', { percent: 0, message: 'Initialising Libraries...' });
+    const libs = await this._getLibs(project);
+    if (libs.length) {
+      await this.serverReq('libraries/cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ libs }),
+      });
+    }
     this.emit('console.progress', { percent: 0.25 * mod, message: 'Compiling code...' });
-    const res = await this.socket.emitAsync('compile.start', {
+    const req = {
       fqbn: this._getFqbn(),
       files,
-      noHex: !close,
       flags: this._getFlags(),
-    });
+      libs,
+    };
+    const start = Date.now();
+    let res;
+    try {
+      res = await this.serverReq('compile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req),
+      });
+    } catch (err) {
+      res = {
+        error: Date.now() - start > 29.5 * 1000
+          ? 'Compiling timed out after 30 seconds.\r\n'
+            + 'If you are using libraries for the first time, try again a few times.\r\n'
+            + 'If this problem persists, please try reaching out on the Discord.\r\n'
+          : 'An Unknown issue occurred whilst compiling.\r\n'
+            + 'Please try reaching out on the Discord if this persists.\r\n'
+            + `${err.message}\r\n`,
+      };
+    }
     if (res.error) {
-      this.emit('console.error', res.error);
+      if (logErr) this.emit('console.error', res.error);
       throw new Error(res.error);
     }
-    if (close) {
-      this.emit('console.progress', { percent: 1, message: 'Done!' });
-      this.disconnect();
-    } else {
-      this.emit('console.progress', { percent: 0.5 * mod, message: 'Compiling completed!' });
-    }
+    this.emit('console.log', res.log);
+    this.emit('console.progress', { percent: 1, message: 'Done!' });
+    return res.hex;
     // this.disconnect();
     // return res.hex;
   }
@@ -301,60 +254,20 @@ class CompileServer extends EventEmitter {
       });
       return;
     }
-    const [board] = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data;
-    const { protocol } = board?.props?.upload;
-    const speed = this._getUploadSpeed();
-    const speedDiff = this.Vue.$serial.baud !== speed;
-    // const hex = await this.compile(false);
-    await this.compile(false);
-    this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
-    const id = Math.random().toString(16).substr(2);
-    // eslint-disable-next-line no-console
-    // console.log(this.Vue.$serial.baud, speed);
-    if (speedDiff) await this.Vue.$serial.setBaud(speed);
-    // eslint-disable-next-line no-console
-    // console.log(this.Vue.$serial.baud, speed);
-    this.Vue.$serial.setMute(true);
-
-    const dataUp = (buff) => this.socket.emit(`upload.dataUp.${id}`, buff);
-    const dataDown = (buff) => this.Vue.$serial.writeBuff(buff);
-    this.Vue.$serial.on('data', dataUp);
-    this.socket.on(`upload.dataDown.${id}`, dataDown);
-
-    const project = store.getters['projects/find']({ query: { uuid: store.getters.currentProject } }).data[0];
-    const files = store.getters['files/find']({ query: { projectId: project.uuid } }).data
-      .map((f) => ({ content: f.body, name: `${project.ref}/${f.name}` }));
-
-    if (['arduino', 'wiring'].includes(protocol)) {
-      this.Vue.$serial._beforeWriteFn = async () => {
-        // eslint-disable-next-line no-console
-        // console.log('before write', protocol);
-        await this.Vue.$serial.setSignals('off');
-        await asyncTimeout(protocol === 'arduino' ? 250 : 50);
-        await this.Vue.$serial.setSignals('on');
-        await asyncTimeout(protocol === 'arduino' ? 250 : 100);
-      };
-    }
-
-    const err = await this.socket.emitAsync('upload.start', {
-      id,
-      fqbn: this._getFqbn(),
-      files,
-      flags: this._getFlags(),
-    });
-    await this.Vue.$serial.setSignals('off');
-
-    if (err) {
+    const flags = this._getFlags();
+    try {
+      const hex = await this.compile(1, false);
+      this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
+      // eslint-disable-next-line no-console
+      console.log(this.Vue.$serial);
+      await this.Vue.$uploader.upload(hex, { ...flags });
+      this.emit('console.progress', { percent: 1.0, message: 'Done!' });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err);
       this.emit('console.error', err);
       this.emit('console.progress', { percent: 1.0, message: 'Error!' });
     }
-    this.emit('console.progress', { percent: 1.0, message: 'Done!' });
-
-    this.Vue.$serial.off('data', dataUp);
-    this.socket.off(`upload.dataDown.${id}`, dataDown);
-    this.disconnect();
-    if (speedDiff) await this.Vue.$serial.resetBaud();
-    this.Vue.$serial.setMute(false);
   }
 }
 

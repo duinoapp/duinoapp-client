@@ -1,4 +1,5 @@
 <template>
+  <!-- eslint-disable vue/valid-v-slot -->
   <div>
     <v-data-table
       :headers="headers"
@@ -22,6 +23,7 @@
           </template>
           <span>More Info</span>
         </v-tooltip>
+        <project-add-lib :lib="item" />
       </template>
     </v-data-table>
     <v-dialog :value="!!currentLib" max-width="500" @input="currentLib = null">
@@ -58,8 +60,12 @@
 
 <script>
 import debouncePromise from 'debounce-promise';
+import projectAddLib from './project-add-lib.vue';
 
 export default {
+  components: {
+    projectAddLib,
+  },
   props: {
     search: {
       type: String,
@@ -113,8 +119,8 @@ export default {
       this.loadLibs();
     },
   },
-  mounted() {
-    this.loadLibs();
+  async mounted() {
+    await this.loadLibs();
   },
   methods: {
     // eslint-disable-next-line func-names
@@ -140,10 +146,10 @@ export default {
       this.loading = false;
     }, 500),
     getDesc(lib) {
-      if (lib.paragraph.indexOf(lib.sentence) === 0) {
-        return lib.paragraph;
+      if (lib.paragraph?.indexOf(lib.sentence) === 0) {
+        return lib.paragraph.replace(/<br ?\/?>/g, '\n');
       }
-      return `${lib.sentence} ${lib.paragraph}`;
+      return `${lib.sentence}\n\n${lib.paragraph ?? ''}`.replace(/<br ?\/?>/g, '\n');
     },
   },
 };
@@ -152,7 +158,7 @@ export default {
 <style lang="scss" scoped>
 
 pre {
-  white-space: inherit;
+  white-space: pre-line;
   font-family: inherit;
 }
 

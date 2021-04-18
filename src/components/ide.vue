@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     resize() {
-      this.$refs.editor.getEditor().layout();
+      this.$refs.editor.getEditor()?.layout();
     },
     monacoMount(monaco) { this.monaco = monaco; },
     editorMount(editor) {

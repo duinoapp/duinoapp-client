@@ -24,6 +24,24 @@
         </template>
       </save-project>
     </v-col>
+    <v-col cols="auto">
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <v-badge :value="!!libs" :content="libs" overlap>
+            <v-btn icon to="/tools/libraries" v-on="on">
+              <v-icon>mdi mdi-book-open-variant</v-icon>
+            </v-btn>
+          </v-badge>
+        </template>
+        <div v-if="libs" class="text-center">
+          <strong>Libraries</strong>
+          <div v-for="(lib, i) in project.libraries" :key="i">
+            {{lib.name}} - {{lib.version}}
+          </div>
+        </div>
+        <strong v-else>Libraries</strong>
+      </v-tooltip>
+    </v-col>
   </v-row>
 </template>
 
@@ -44,6 +62,11 @@ export default {
     return {
       exportLoading: false,
     };
+  },
+  computed: {
+    libs() {
+      return this.project?.libraries?.length;
+    },
   },
   methods: {
     async exportProject() {

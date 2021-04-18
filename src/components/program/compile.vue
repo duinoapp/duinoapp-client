@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapMutations } from 'vuex';
 
 export default {
   props: {
@@ -49,7 +49,18 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['currentBoard', 'currentProject', 'currentServer']),
+    currentServer() {
+      const { Server } = this.$FeathersVuex.api;
+      return Server.findInStore({ query: { uuid: this.$store.getters.currentServer } }).data[0];
+    },
+    currentBoard() {
+      const { Board } = this.$FeathersVuex.api;
+      return Board.findInStore({ query: { uuid: this.$store.getters.currentBoard } }).data[0];
+    },
+    currentProject() {
+      const { Project } = this.$FeathersVuex.api;
+      return Project.findInStore({ query: { uuid: this.$store.getters.currentProject } }).data[0];
+    },
     valid() {
       return !!(this.currentServer
         && this.currentBoard
