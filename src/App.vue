@@ -100,6 +100,7 @@
       </v-row>
     </v-footer>
     <serial-prompts />
+    <important-update />
   </v-app>
 </template>
 
@@ -115,6 +116,7 @@ import CompileBtn from './components/program/compile.vue';
 import UploadBtn from './components/program/upload.vue';
 import CompileConsole from './components/program/console.vue';
 import Coffee from './components/coffee.vue';
+import ImportantUpdate from './components/general/important-update.vue';
 
 export default {
   name: 'App',
@@ -129,6 +131,7 @@ export default {
     CompileConsole,
     UploadBtn,
     Coffee,
+    ImportantUpdate,
   },
   data() {
     return {
