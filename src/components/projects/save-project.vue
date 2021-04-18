@@ -7,7 +7,7 @@
       <slot name="activator" :on="on" />
     </template>
     <v-card>
-      <v-card-title class="headline">
+      <v-card-title class="text-h5">
         {{id === null ? 'Create New' : 'Edit'}} Project
       </v-card-title>
       <v-card-text>

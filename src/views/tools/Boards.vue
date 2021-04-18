@@ -7,7 +7,7 @@
       <v-list>
         <v-list-item>
           <v-list-item-content>
-            <v-list-item-title class="headline"><b>Select Your Board</b></v-list-item-title>
+            <v-list-item-title class="text-h5"><b>Select Your Board</b></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -102,7 +102,7 @@
         v-if="currentBoard"
         elevation="0"
       >
-        <v-card-title class="display-1">
+        <v-card-title class="text-h4">
           {{currentBoard.name}} Settings
         </v-card-title>
         <v-card-text v-if="!currentBoard.config_options">

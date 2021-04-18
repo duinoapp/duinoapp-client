@@ -6,7 +6,7 @@
       max-width="500px"
     >
       <v-card>
-        <v-card-title class="headline">
+        <v-card-title class="text-h5">
           Please give a name to your device.
         </v-card-title>
         <v-card-text>
@@ -33,7 +33,7 @@
       max-width="500px"
     >
       <v-card>
-        <v-card-title class="headline">
+        <v-card-title class="text-h5">
           Oh No! Your Browser isn't Supported!
         </v-card-title>
         <v-card-text>
@@ -60,7 +60,7 @@
       max-width="500px"
     >
       <v-card>
-        <v-card-title class="headline">
+        <v-card-title class="text-h5">
           Oh No! We cannot access the device!
         </v-card-title>
         <v-card-text>
