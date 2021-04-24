@@ -26,11 +26,11 @@
           v-if="importProject"
           v-model="file"
           :rules="[
-            (val) => !val || val.type === 'application/zip' || 'File must be a .zip',
+            (val) => !val || /^application\/(x-)?zip/.test(val.type) || 'File must be a .zip',
           ]"
           :error-messages="[unzipError, inoError].filter(v => v)"
           label="Upload Project Zip"
-          accept="application/zip"
+          accept=".zip,application/zip,application/x-zip,application/x-zip-compressed"
           outlined
           show-size
         />
