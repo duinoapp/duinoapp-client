@@ -10,7 +10,7 @@
         />
       </v-col>
       <v-col md="8" lg="6" class="text-center">
-        <h1 class="text-h1">Welcome to Duino.App</h1>
+        <h1 class="text-h1">Welcome to Duino App</h1>
       </v-col>
       <v-col cols="12">&nbsp;</v-col>
       <v-col cols="auto" class="text-center">
@@ -24,7 +24,7 @@
         </p>
         <ol class="text-left">
           <li>Create a project and write your code.</li>
-          <li>Select a compile server with a low ping.</li>
+          <li>Select a compile server.</li>
           <li>Select which board you're using.</li>
           <li>Select a serial port to upload to.</li>
           <li>Press the upload button in the top right.</li>

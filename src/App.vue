@@ -76,7 +76,13 @@
     <v-footer dense app style="z-index: 10">
       <v-row style="display: contents;">
         <div style="line-height: 28px;">
-          Duino.App &copy; {{ new Date().getFullYear() }}
+          <small>
+            Duino App
+            &copy;
+            {{ (new Date()).getFullYear() }}
+            &dash;
+            v{{version}}
+          </small>
         </div>
         <div class="ml-2">
           <v-btn href="https://github.com/duinoapp/duinoapp-client/issues" target="_blank" rel="noopener noreferrer" text small>
@@ -117,6 +123,7 @@ import UploadBtn from './components/program/upload.vue';
 import CompileConsole from './components/program/console.vue';
 import Coffee from './components/coffee.vue';
 import ImportantUpdate from './components/general/important-update.vue';
+import { version } from '../package.json';
 
 export default {
   name: 'App',
@@ -137,6 +144,7 @@ export default {
     return {
       serialReady: false,
       tab: 'program',
+      version,
     };
   },
   methods: {
