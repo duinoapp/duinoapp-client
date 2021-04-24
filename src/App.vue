@@ -15,6 +15,10 @@
           <v-icon left>mdi-code-braces</v-icon>
           Code
         </v-btn>
+        <v-btn text dense to="/tools/libraries" class="mx-1">
+          <v-icon left>mdi-book-open-variant</v-icon>
+          Libraries
+        </v-btn>
         <v-btn text dense to="/tools" class="mx-1">
           <v-icon left>mdi-wrench</v-icon>
           Tools
