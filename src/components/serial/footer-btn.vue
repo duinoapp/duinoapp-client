@@ -3,9 +3,11 @@
     <!-- eslint-disable-next-line vue/no-unused-vars -->
     <template #activator="{ on }">
       <v-btn text dense small @click="activate(on)" v-if="currentDevice">
-        Serial: {{deviceName}}
+        <v-icon v-show="$vuetify.breakpoint.mdAndDown" small left>mdi-usb-port</v-icon>
+        <span v-show="!$vuetify.breakpoint.mdAndDown">Serial:</span>
+        {{deviceName}}
       </v-btn>
-      <v-btn text dense small @click="activate" v-else>Select Device Port</v-btn>
+      <v-btn text dense small @click="activate" v-else>Select Device</v-btn>
     </template>
     <v-list dense :style="{ padding: '0' }">
       <v-list-item

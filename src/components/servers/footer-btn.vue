@@ -3,7 +3,8 @@
     <v-tooltip top v-if="currentServer">
       <template v-slot:activator="{ on }">
         <v-btn text dense small to="/tools/servers" v-on="on">
-          Server:
+        <v-icon v-show="$vuetify.breakpoint.mdAndDown" small left>mdi-server</v-icon>
+        <span v-show="!$vuetify.breakpoint.mdAndDown">Server:</span>
           <v-chip
             :color="currentServer.valid ? 'success' : 'error'"
             class="mx-1"
@@ -11,10 +12,9 @@
           >
             {{currentServer.valid ? 'Online' : 'Offline'}}
           </v-chip>
-          {{flag}}
         </v-btn>
       </template>
-      <span>{{currentServer.name}} ({{currentServer.country}})</span>
+      <span>{{flag}} {{currentServer.name}}</span>
     </v-tooltip>
     <v-btn v-else text dense small to="/tools/servers">Select Server</v-btn>
   </div>

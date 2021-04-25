@@ -40,7 +40,7 @@
       </p>
       <h3>What does it do?</h3>
       <p>
-        A compiled code is often referred to as "machine readable code", instruction-sets for your
+        Compiled code is often referred to as "machine readable code", instruction-sets for your
         computing hardware to follow in 1's and 0's. This is complicated and very hard for humans to read,
         let alone write. To solve this problem, we code in a more human-friendly coding language,
         and then use a compiler to convert it into compiled code.
@@ -48,23 +48,24 @@
       <p>
         Compiling code can be very complicated, especially compiling for light environments like that of an Arduino,
         and most compilers are written in what's called a low-level language, like C or C++.
-        Browsers run on a high-level language called JavaScript, which is a lot different from C.
-        Re-writing a compiler for JavaScript would be like trying to convert a tesla into a VW Beetle.
+        Browsers run on a high-level language called JavaScript, which is very different than C.
+        Re-writing a compiler for JavaScript would be like trying to convert a VW Beetle into a Tesla.
       </p>
       <p>
         Uploading compiled code to a microcontroller is like transfering the compiled code file over USB to the microcontroller,
         like transfering files onto a USB thumbdrive.
         The process sounds simple but there is no universally agreed way on how to do it,
         every microcontroller has their own way of uploading, with each controller having their own uploader.
-        This means in order to support a wide veriety of microcontrollers, each and every uploader would need
+        This means in order to support a wide veriety of microcontrollers, each and every uploader needs
         to be converted to JavaScript.
       </p>
       <p>
         Duino App gets around these issues by using remote compile servers,
         which run a light-weight version of the Arduino Programmer
-        that already supports compiling and uploading to many different controllers.
-        Duino App sets up a fake USB device on the server for the Arduino programmer to interact with,
-        which then gets steamed back and forth to the Duino App client which communicated to the real controller over USB.
+        that already supports compiling for many different controllers.
+        Duino App takes the compiled code and uses custom uploaders written in JavaScript, like
+        <a href="https://github.com/noopkat/avrgirl-arduino" target="_blank">avrgirl</a>,
+        to upload your code onto your device.
       </p>
     </v-col>
   </v-row>

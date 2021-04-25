@@ -34,7 +34,9 @@ class BaseSerial extends EventEmitter {
     this.connected = false;
     this.implementation = 'basic';
     this.serial = null;
-    this.DEBUG = true;
+    this.DEBUG = !!process.env.VUE_APP_DEBUG;
+    // eslint-disable-next-line no-console
+    // console.log('debug', this.DEBUG);
   }
 
   install(Vue) {

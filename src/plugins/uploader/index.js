@@ -4,6 +4,8 @@ import store from '../../store';
 // import avrdude from './stk500';
 import avrdude from './avrgirl';
 
+const asyncTimeout = (timeout) => new Promise((resolve) => setTimeout(() => resolve(timeout), timeout));
+
 class Uploader extends EventEmitter {
   install(Vue) {
     // eslint-disable-next-line no-param-reassign
@@ -23,6 +25,12 @@ class Uploader extends EventEmitter {
     return !!get(this.toolMap, toolProt) && get(this.toolMap, tool).isValid(board);
   }
 
+  async waitForClose(serial, count = 0) {
+    if (!serial.serial.isOpen || count > 50) return null;
+    await asyncTimeout(100);
+    return this.waitForClose(serial, count + 1);
+  }
+
   async upload(hex, config) {
     const serial = this.Vue.$serial;
     const existBaud = serial.baud;
@@ -40,6 +48,7 @@ class Uploader extends EventEmitter {
       debug: (message) => this.Vue.$compiler.emit('console.log', message),
     });
 
+    await this.waitForClose(serial);
     await serial.setBaud(existBaud);
     await serial.connect();
     await serial.setMute(false);
