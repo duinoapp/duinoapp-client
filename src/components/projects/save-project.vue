@@ -113,7 +113,7 @@ export default {
     },
     valid() {
       return !!this.name.trim()
-        && (!this.importProject || this.file?.type === 'application/zip')
+        && (!this.importProject || /^application\/(x-)?zip/.test(this.file.type))
         && !this.unzipError
         && !this.inoError;
     },
