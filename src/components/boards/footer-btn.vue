@@ -3,7 +3,9 @@
     <v-tooltip top v-if="currentBoard">
       <template v-slot:activator="{ on }">
         <v-btn text dense small v-on="on" to="/tools/boards">
-          Board: {{currentBoard.fqbn.split(':').shift()}} {{currentBoard.fqbn.split(':').pop()}}
+          <v-icon v-show="$vuetify.breakpoint.mdAndDown" small left>mdi-chip</v-icon>
+          <span v-show="!$vuetify.breakpoint.mdAndDown">Board:</span>
+          {{currentBoard.fqbn.split(':').shift()}} {{currentBoard.fqbn.split(':').pop()}}
         </v-btn>
       </template>
       <span>{{currentBoard.name}}</span>

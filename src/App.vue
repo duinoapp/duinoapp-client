@@ -88,19 +88,58 @@
             v{{version}}
           </small>
         </div>
-        <div class="ml-2">
-          <v-btn href="https://github.com/duinoapp/duinoapp-client/issues" target="_blank" rel="noopener noreferrer" text small>
-            <v-icon small left>mdi-bug-outline</v-icon>
-            Issues
-          </v-btn>
-          <v-btn href="https://github.com/duinoapp/duinoapp-client/wiki/Privacy-Policy" target="_blank" rel="noopener noreferrer" text small>
-            <v-icon small left>mdi-incognito</v-icon>
-            Privacy
-          </v-btn>
-          <v-btn href="https://github.com/duinoapp/duinoapp-client/wiki/Terms-of-Service" target="_blank" rel="noopener noreferrer" text small>
-            <v-icon small left>mdi-scale-balance</v-icon>
-            Terms
-          </v-btn>
+        <div :class="{ 'ml-2': true, 'mr-auto': $vuetify.breakpoint.mdAndDown }">
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <v-btn
+                href="https://github.com/duinoapp/duinoapp-client/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                :text="!$vuetify.breakpoint.mdAndDown"
+                :icon="$vuetify.breakpoint.mdAndDown"
+                small
+                v-on="on"
+              >
+                <v-icon small left>mdi-bug-outline</v-icon>
+                {{ !$vuetify.breakpoint.mdAndDown ? 'Issues' : '' }}
+              </v-btn>
+            </template>
+            <span>Report an Issue/Bug</span>
+          </v-tooltip>
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <v-btn
+                href="https://github.com/duinoapp/duinoapp-client/wiki/Privacy-Policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                :text="!$vuetify.breakpoint.mdAndDown"
+                :icon="$vuetify.breakpoint.mdAndDown"
+                small
+                v-on="on"
+              >
+                <v-icon small left>mdi-incognito</v-icon>
+                {{ !$vuetify.breakpoint.mdAndDown ? 'Privacy' : '' }}
+              </v-btn>
+            </template>
+            <span>Privacy Policy</span>
+          </v-tooltip>
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <v-btn
+                href="https://github.com/duinoapp/duinoapp-client/wiki/Terms-of-Service"
+                target="_blank"
+                rel="noopener noreferrer"
+                :text="!$vuetify.breakpoint.mdAndDown"
+                :icon="$vuetify.breakpoint.mdAndDown"
+                small
+                v-on="on"
+              >
+                <v-icon small left>mdi-scale-balance</v-icon>
+                {{ !$vuetify.breakpoint.mdAndDown ? 'Terms' : '' }}
+              </v-btn>
+            </template>
+            <span>Terms of Service</span>
+          </v-tooltip>
         </div>
         <v-spacer/>
         <serial-footer v-if="serialReady" />
