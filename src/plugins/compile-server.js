@@ -86,8 +86,6 @@ class CompileServer extends EventEmitter {
   }
 
   async load() {
-    // eslint-disable-next-line no-console
-    console.log(this.isValid());
     if (!this.isValid()) return;
     // eslint-disable-next-line no-console
     console.log('loading start');
@@ -151,8 +149,6 @@ class CompileServer extends EventEmitter {
   }
 
   async librariesSearch(search, limit = 10, skip = 0, sortBy = 'name', sortDesc = false) {
-    // eslint-disable-next-line no-console
-    console.log('lib-search');
     await this.initPromise;
     const e = encodeURIComponent;
     const query = `?search=${e(search ?? '')}&limit=${limit}&skip=${skip}&sortBy=${e(sortBy)}&sortDesc=${sortDesc}`;
@@ -259,7 +255,7 @@ class CompileServer extends EventEmitter {
       const hex = await this.compile(1, false);
       this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
       // eslint-disable-next-line no-console
-      console.log(this.Vue.$serial);
+      // console.log(this.Vue.$serial);
       await this.Vue.$uploader.upload(hex, { ...flags });
       this.emit('console.progress', { percent: 1.0, message: 'Done!' });
     } catch (err) {

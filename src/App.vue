@@ -204,8 +204,6 @@ export default {
     await this.$FeathersVuex.api.Setting.find({ query: { $limit: 9999999 } });
     const { Setting } = this.$FeathersVuex.api;
     const { data } = Setting.findInStore({ query: { key: 'editor' } });
-    // eslint-disable-next-line no-console
-    console.log(data[0]);
     this.$vuetify.theme.dark = /(dark)|(black)/.test(data[0]?.value?.theme ?? '');
   },
 };
