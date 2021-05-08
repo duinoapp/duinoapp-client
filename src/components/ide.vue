@@ -35,9 +35,7 @@ export default {
       const { Setting } = this.$FeathersVuex.api;
       const { data } = Setting.findInStore({ query: { key: 'editor' } });
       if (data[0]) return data[0].value;
-      const settings = new Setting({ key: 'editor' });
-      settings.save();
-      return settings.value;
+      return {};
     },
     editorOptions() {
       return {

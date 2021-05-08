@@ -87,24 +87,29 @@ export default {
         { text: 'High Contrast', value: 'hc-black' },
       ],
       demoCode,
+      settings: { value: {} },
     };
   },
-  computed: {
-    settings() {
+  methods: {
+    loadSettings() {
       const { Setting } = this.$FeathersVuex.api;
       const { data } = Setting.findInStore({ query: { key: 'editor' } });
-      if (data[0]) return data[0];
+      if (data[0]) {
+        [this.settings] = data;
+        return;
+      }
       const settings = new Setting({ key: 'editor' });
       settings.save();
-      return settings;
+      this.settings = settings;
     },
-  },
-  methods: {
     handleSave(to, from) {
       if (JSON.stringify(to) === JSON.stringify(from)) return false;
       this.settings.save();
       return true;
     },
+  },
+  mounted() {
+    this.loadSettings();
   },
   watch: {
     'settings.value.theme': {
