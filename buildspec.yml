@@ -10,6 +10,7 @@ phases:
   build:
     commands:
       - yarn build
+      - echo '["https://compile.duino.app"]' > dist/servers.json
 artifacts:
   files:
     - '**/*'

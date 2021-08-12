@@ -148,10 +148,14 @@ class CompileServer extends EventEmitter {
     console.log('loading finished');
   }
 
-  async librariesSearch(search, limit = 10, skip = 0, sortBy = 'name', sortDesc = false) {
+  async librariesSearch(search, limit = 10, {
+    skip = 0, sortBy = 'name', sortDesc = false, exact = false,
+  } = {}) {
     await this.initPromise;
     const e = encodeURIComponent;
-    const query = `?search=${e(search ?? '')}&limit=${limit}&skip=${skip}&sortBy=${e(sortBy)}&sortDesc=${sortDesc}`;
+    const query = `?search=${
+      e(search ?? '')
+    }&limit=${limit}&skip=${skip}&sortBy=${e(sortBy)}&sortDesc=${sortDesc}&exact=${exact}`;
     const res = await this.serverReq(`info/libraries${query}`);
     return res || {
       limit, skip, total: 0, data: [],
@@ -180,8 +184,8 @@ class CompileServer extends EventEmitter {
 
   async _getLibs({ libraries }) {
     if (!libraries?.length) return [];
-    const search = libraries.map(({ name }) => name.replaceAll(' ', '.')).join(' ');
-    const { data } = await this.librariesSearch(search, libraries.length);
+    const search = libraries.map(({ name }) => name.replaceAll(' ', '.')).join(',');
+    const { data } = await this.librariesSearch(search, libraries.length, { exact: true });
     return libraries.map((lib) => ({
       ...lib,
       url: data
@@ -236,8 +240,11 @@ class CompileServer extends EventEmitter {
       throw new Error(res.error);
     }
     this.emit('console.log', res.log);
+    if (res.log.includes('In function \'spiTransferBytesNL\':')) {
+      this.emit('console.log', '> Please note that the above "-Wincompatible-pointer-types" warning is only a warning.\r\n');
+    }
     this.emit('console.progress', { percent: 1, message: 'Done!' });
-    return res.hex;
+    return res;
     // this.disconnect();
     // return res.hex;
   }
@@ -252,11 +259,12 @@ class CompileServer extends EventEmitter {
     }
     const flags = this._getFlags();
     try {
-      const hex = await this.compile(1, false);
+      const res = await this.compile(1, false);
+      if (!res.hex && !res.files) throw new Error('Failed to compile code');
       this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
       // eslint-disable-next-line no-console
       // console.log(this.Vue.$serial);
-      await this.Vue.$uploader.upload(hex, { ...flags });
+      await this.Vue.$uploader.upload(res, { ...flags });
       this.emit('console.progress', { percent: 1.0, message: 'Done!' });
     } catch (err) {
       // eslint-disable-next-line no-console
