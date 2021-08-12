@@ -3,7 +3,7 @@
 workbox.core.setCacheNameDetails({ prefix: 'd4' });
 
 // Do not touch this line
-const LATEST_VERSION = '3.2.3';
+const LATEST_VERSION = '3.3.0';
 
 self.addEventListener('activate', (event) => {
   console.log(`%c ${LATEST_VERSION} `, 'background: #ddd; color: #0000ff');
