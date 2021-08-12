@@ -142,7 +142,7 @@ export default class Transport {
       } while (packet.length < min_data);
 
       if (done) {
-        console.log('timed out', packet);
+        // console.log('timed out', packet);
         // eslint-disable-next-line no-throw-literal
         throw ('timeout');
       } else {
