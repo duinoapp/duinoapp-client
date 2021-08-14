@@ -167,7 +167,7 @@ class CompileServer extends EventEmitter {
     const board = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data[0];
     if (!board) return 'arduino:avr:uno';
     return Object.keys(board.config)
-      .filter((i) => !board.config_options
+      .filter((i) => board.config[i] && !board.config_options
         .find((c) => c.option === i).values
         .find((v) => v.value === board.config[i]).isDefault)
       .reduce((a, i) => `${a}:${i}=${board.config[i]}`, board.fqbn);
@@ -202,13 +202,13 @@ class CompileServer extends EventEmitter {
       .map((f) => ({ content: f.body, name: `${project.ref}/${f.name}` }));
     this.emit('console.progress', { percent: 0, message: 'Initialising Libraries...' });
     const libs = await this._getLibs(project);
-    if (libs.length) {
-      await this.serverReq('libraries/cache', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ libs }),
-      });
-    }
+    // if (libs.length) {
+    //   await this.serverReq('libraries/cache', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ libs }),
+    //   });
+    // }
     this.emit('console.progress', { percent: 0.25 * mod, message: 'Compiling code...' });
     const req = {
       fqbn: this._getFqbn(),

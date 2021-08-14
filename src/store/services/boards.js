@@ -16,7 +16,11 @@ class Board extends BaseModel {
         if (!this.config_options) return {};
         const config = {};
         this.config_options.forEach((con) => {
-          config[con.option] = (con.values.find((val) => val.selected) || {}).value;
+          config[con.option] = (
+            con.values.find((val) => val.selected)
+            || con.values.find((val) => val.isDefault)
+            || {}
+          ).value;
         });
         return config;
       },

@@ -12,17 +12,22 @@
     <v-col cols="12">
       <compiler />
     </v-col>
+    <v-col cols="12">
+      <monitor />
+    </v-col>
   </v-row>
 </template>
 
 <script>
 import Editor from '../../components/settings/editor.vue';
 import Compiler from '../../components/settings/compiler.vue';
+import Monitor from '../../components/settings/monitor.vue';
 
 export default {
   components: {
     Editor,
     Compiler,
+    Monitor,
   },
 };
 </script>
