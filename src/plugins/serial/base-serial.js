@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable class-methods-use-this */
 import EventEmitter from 'events';
+import store from '@/store';
 
 /*
 Interface should emit the following:
@@ -28,7 +29,6 @@ class BaseSerial extends EventEmitter {
     this.mute = false;
     this.baud = Number(window.localStorage.currentBaudRate) || 115200;
     this.lastBaud = 115200;
-    this.encoding = 'ascii';
     this.devices = [];
     this.currentDevice = null;
     this.connected = false;
@@ -37,6 +37,11 @@ class BaseSerial extends EventEmitter {
     this.DEBUG = !!process.env.VUE_APP_DEBUG;
     // eslint-disable-next-line no-console
     // console.log('debug', this.DEBUG);
+  }
+
+  get encoding() {
+    const [settings] = store.getters['settings/find']({ query: { key: 'monitor' } }).data;
+    return settings?.value?.encoding || 'ascii';
   }
 
   install(Vue) {

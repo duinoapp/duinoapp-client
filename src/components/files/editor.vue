@@ -56,6 +56,6 @@ export default {
 <style>
 .code-editor {
   width: 100%;
-  height: calc(100vh - 88px);
+  height: calc(100vh - 89px);
 }
 </style>

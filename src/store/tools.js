@@ -41,4 +41,7 @@ export const settingsDefaults = {
   compiler: {
     verbose: false,
   },
+  monitor: {
+    encoding: 'ascii',
+  },
 };

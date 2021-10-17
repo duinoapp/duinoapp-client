@@ -148,10 +148,14 @@ class CompileServer extends EventEmitter {
     console.log('loading finished');
   }
 
-  async librariesSearch(search, limit = 10, skip = 0, sortBy = 'name', sortDesc = false) {
+  async librariesSearch(search, limit = 10, {
+    skip = 0, sortBy = 'name', sortDesc = false, exact = false,
+  } = {}) {
     await this.initPromise;
     const e = encodeURIComponent;
-    const query = `?search=${e(search ?? '')}&limit=${limit}&skip=${skip}&sortBy=${e(sortBy)}&sortDesc=${sortDesc}`;
+    const query = `?search=${
+      e(search ?? '')
+    }&limit=${limit}&skip=${skip}&sortBy=${e(sortBy)}&sortDesc=${sortDesc}&exact=${exact}`;
     const res = await this.serverReq(`info/libraries${query}`);
     return res || {
       limit, skip, total: 0, data: [],
@@ -163,7 +167,7 @@ class CompileServer extends EventEmitter {
     const board = store.getters['boards/find']({ query: { uuid: store.getters.currentBoard } }).data[0];
     if (!board) return 'arduino:avr:uno';
     return Object.keys(board.config)
-      .filter((i) => !board.config_options
+      .filter((i) => board.config[i] && !board.config_options
         .find((c) => c.option === i).values
         .find((v) => v.value === board.config[i]).isDefault)
       .reduce((a, i) => `${a}:${i}=${board.config[i]}`, board.fqbn);
@@ -180,8 +184,8 @@ class CompileServer extends EventEmitter {
 
   async _getLibs({ libraries }) {
     if (!libraries?.length) return [];
-    const search = libraries.map(({ name }) => name.replaceAll(' ', '.')).join(' ');
-    const { data } = await this.librariesSearch(search, libraries.length);
+    const search = libraries.map(({ name }) => name.replaceAll(' ', '.')).join(',');
+    const { data } = await this.librariesSearch(search, libraries.length, { exact: true });
     return libraries.map((lib) => ({
       ...lib,
       url: data
@@ -198,13 +202,13 @@ class CompileServer extends EventEmitter {
       .map((f) => ({ content: f.body, name: `${project.ref}/${f.name}` }));
     this.emit('console.progress', { percent: 0, message: 'Initialising Libraries...' });
     const libs = await this._getLibs(project);
-    if (libs.length) {
-      await this.serverReq('libraries/cache', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ libs }),
-      });
-    }
+    // if (libs.length) {
+    //   await this.serverReq('libraries/cache', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ libs }),
+    //   });
+    // }
     this.emit('console.progress', { percent: 0.25 * mod, message: 'Compiling code...' });
     const req = {
       fqbn: this._getFqbn(),
@@ -236,8 +240,11 @@ class CompileServer extends EventEmitter {
       throw new Error(res.error);
     }
     this.emit('console.log', res.log);
+    if (res.log.includes('In function \'spiTransferBytesNL\':')) {
+      this.emit('console.log', '> Please note that the above "-Wincompatible-pointer-types" warning is only a warning.\r\n');
+    }
     this.emit('console.progress', { percent: 1, message: 'Done!' });
-    return res.hex;
+    return res;
     // this.disconnect();
     // return res.hex;
   }
@@ -252,11 +259,12 @@ class CompileServer extends EventEmitter {
     }
     const flags = this._getFlags();
     try {
-      const hex = await this.compile(1, false);
+      const res = await this.compile(1, false);
+      if (!res.hex && !res.files) throw new Error('Failed to compile code');
       this.emit('console.progress', { percent: 0.5, message: 'Uploading code...' });
       // eslint-disable-next-line no-console
       // console.log(this.Vue.$serial);
-      await this.Vue.$uploader.upload(hex, { ...flags });
+      await this.Vue.$uploader.upload(res, { ...flags });
       this.emit('console.progress', { percent: 1.0, message: 'Done!' });
     } catch (err) {
       // eslint-disable-next-line no-console

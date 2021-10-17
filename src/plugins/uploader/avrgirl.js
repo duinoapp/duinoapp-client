@@ -11,7 +11,7 @@ const getConfig = (board) => {
 
 const isValid = (board) => true || !!getConfig(board)?.protocol;
 
-const upload = (hex, board, serial, config) => new Promise((resolve, reject) => {
+const upload = ({ hex }, board, serial, config) => new Promise((resolve, reject) => {
   const avrgirl = new Avrgirl({
     board: getConfig(board),
     serialPort: serial,

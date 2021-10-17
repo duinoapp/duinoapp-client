@@ -39,6 +39,7 @@ export default {
       this.$terminal.write(val.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n'));
     },
     clear() {
+      this.$terminal.write('\r\n');
       this.$terminal.clear();
     },
     focus() {
@@ -49,6 +50,9 @@ export default {
     },
     fit() {
       this.$terminal.fit();
+    },
+    cols() {
+      return this.$terminal.cols;
     },
   },
 };

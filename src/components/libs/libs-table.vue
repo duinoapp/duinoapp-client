@@ -133,9 +133,11 @@ export default {
         const res = await this.$compiler.librariesSearch(
           this.search,
           itemsPerPage,
-          page - 1,
-          sortBy[0],
-          sortDesc[0],
+          {
+            skip: page - 1,
+            sortBy: sortBy[0],
+            sortDesc: sortDesc[0],
+          },
         );
         this.items = res.data;
         this.total = res.total;

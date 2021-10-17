@@ -10,6 +10,7 @@ phases:
   build:
     commands:
       - yarn build
+      - cp dist/servers-beta.json dist/servers.json
 artifacts:
   files:
     - '**/*'
